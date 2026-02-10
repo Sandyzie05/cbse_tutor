@@ -275,17 +275,17 @@ if __name__ == "__main__":
     Test the PDF parser with a sample file.
     Run: python -m maths_tutor.ingestion.pdf_parser
     """
-    from maths_tutor.config import PDF_DIR
+    from maths_tutor.config import BOOKS_DIR
     
     print("=" * 60)
     print("PDF PARSER TEST")
     print("=" * 60)
     
-    # Find first PDF in the directory
-    pdf_files = list(PDF_DIR.glob("*.pdf"))
+    # Find first PDF across all subject directories
+    pdf_files = list(BOOKS_DIR.rglob("*.pdf"))
     
     if not pdf_files:
-        print(f"No PDF files found in {PDF_DIR}")
+        print(f"No PDF files found in {BOOKS_DIR}")
         exit(1)
     
     test_pdf = pdf_files[0]

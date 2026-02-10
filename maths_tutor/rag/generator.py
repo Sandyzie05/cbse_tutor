@@ -250,7 +250,7 @@ class Generator:
     
     def explain(self, concept: str, simple: bool = True) -> str:
         """
-        Explain a mathematical concept.
+        Explain a concept from the CBSE curriculum.
         
         Args:
             concept: The concept to explain
@@ -265,7 +265,7 @@ class Generator:
         
         # Build explanation prompt
         complexity = "very simple terms suitable for a 10-year-old" if simple else "clear terms"
-        prompt = f"""Context from the textbook:
+        prompt = f"""Context from CBSE Grade 5 textbooks:
 ---
 {context}
 ---

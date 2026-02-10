@@ -107,7 +107,7 @@ class VectorStore:
         self._collection = self._client.get_or_create_collection(
             name=self.collection_name,
             metadata={
-                "description": "CBSE Grade 5 Maths textbook chunks",
+                "description": "CBSE Grade 5 textbook chunks (all subjects)",
                 "hnsw:space": "cosine"  # Use cosine distance for better similarity scores
             }
         )
@@ -290,7 +290,7 @@ class VectorStore:
         # Recreate empty collection
         self._collection = self._client.get_or_create_collection(
             name=self.collection_name,
-            metadata={"description": "CBSE Grade 5 Maths textbook chunks"}
+            metadata={"description": "CBSE Grade 5 textbook chunks (all subjects)"}
         )
     
     def get_all_ids(self) -> list[str]:

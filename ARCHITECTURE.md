@@ -1,4 +1,4 @@
-# CBSE Maths AI Tutor - Architecture Guide
+# CBSE AI Tutor - Architecture Guide
 
 This document explains the architecture of the RAG-based chatbot system.
 It's designed to help you understand how all the pieces fit together.
@@ -17,7 +17,7 @@ It's designed to help you understand how all the pieces fit together.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                        CBSE MATHS AI TUTOR                               │
+│                          CBSE AI TUTOR                                  │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
@@ -62,29 +62,31 @@ It's designed to help you understand how all the pieces fit together.
 This happens when you run `python scripts/ingest_books.py`:
 
 ```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│             │    │             │    │             │    │             │
-│  PDF Files  │───▶│ PDF Parser  │───▶│  Chunker    │───▶│  Embedder   │
-│  (16 files) │    │  (pymupdf)  │    │ (800 chars) │    │(sentence-   │
-│             │    │             │    │             │    │transformers)│
-└─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘
-                                                                 │
-                                                                 │ embeddings
-                                                                 │ (384-dim vectors)
-                                                                 ▼
-                                                          ┌─────────────┐
-                                                          │             │
-                                                          │  ChromaDB   │
-                                                          │  (stored)   │
-                                                          │             │
-                                                          └─────────────┘
+┌─────────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│                 │    │             │    │             │    │             │
+│  PDF Files      │───▶│ PDF Parser  │───▶│  Chunker    │───▶│  Embedder   │
+│  (5 subjects,   │    │  (pymupdf)  │    │ (800 chars) │    │(sentence-   │
+│   ~60 PDFs)     │    │             │    │             │    │transformers)│
+└─────────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘
+                                                                    │
+                                                                    │ embeddings
+                                                                    │ (384-dim vectors)
+                                                                    ▼
+                                                             ┌─────────────┐
+                                                             │             │
+                                                             │  ChromaDB   │
+                                                             │  (stored    │
+                                                             │  w/ subject │
+                                                             │  metadata)  │
+                                                             └─────────────┘
 ```
 
 **Step-by-step:**
-1. **PDF Parser** reads each PDF and extracts text
-2. **Chunker** splits text into ~800 character pieces (with 100 char overlap)
-3. **Embedder** converts each chunk to a 384-dimensional vector
-4. **ChromaDB** stores the vectors + original text + metadata
+1. **Subject Discovery** auto-discovers all subject folders under `cbse-books/`
+2. **PDF Parser** reads each PDF and extracts text
+3. **Chunker** splits text into ~800 character pieces (with 100 char overlap)
+4. **Embedder** converts each chunk to a 384-dimensional vector
+5. **ChromaDB** stores the vectors + original text + metadata (including subject)
 
 ### Phase 2: Query (Every Question)
 
@@ -93,24 +95,24 @@ This happens when you ask a question:
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │             │    │             │    │             │    │             │
-│  Question   │───▶│  Embedder   │───▶│ Vector      │───▶│  Top 5      │
+│  Question   │───▶│  Embedder   │───▶│ Vector      │───▶│  Top K      │
 │  "What is   │    │(same model) │    │ Search      │    │  Chunks     │
-│  addition?" │    │             │    │ (ChromaDB)  │    │  (context)  │
+│  a habitat?"│    │             │    │ (ChromaDB)  │    │  (context)  │
 └─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘
-                                                                 │
-                                                                 │
-                                                                 ▼
+                                                                │
+                                                                │
+                                                                ▼
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │             │    │             │    │             │    │             │
 │   Answer    │◀───│   Ollama    │◀───│   Prompt    │◀───│  Context +  │
-│  "Addition  │    │   LLM       │    │  Template   │    │  Question   │
+│  "A habitat │    │   LLM       │    │  Template   │    │  Question   │
 │   is..."    │    │             │    │             │    │             │
 └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
 ```
 
 **Step-by-step:**
 1. **Embedder** converts your question to a vector
-2. **Vector Search** finds the 5 most similar chunks in ChromaDB
+2. **Vector Search** finds the most similar chunks in ChromaDB (across all subjects)
 3. **Prompt Builder** combines context + question into a prompt
 4. **Ollama** generates a response using the context
 5. **Answer** is displayed to the user
@@ -186,17 +188,16 @@ Chunk 2: "25 + 17 is 42. Next, we learn..."  ← Also has the answer!
 **Output:** 384-dimensional vector
 
 ```python
-# This is EXACTLY what you learned in Week 1!
 from sentence_transformers import SentenceTransformer
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
-embedding = model.encode("What is addition?")
+embedding = model.encode("What is a habitat?")
 # Returns: [0.023, -0.156, 0.089, ...] (384 numbers)
 ```
 
 **Why this works:**
 - Similar text → Similar vectors
-- "What is addition?" ≈ "How do you add numbers?"
+- "What is a habitat?" ≈ "Where do animals live?"
 - This is the magic of semantic search!
 
 ---
@@ -206,7 +207,7 @@ embedding = model.encode("What is addition?")
 **Purpose:** Store and search embeddings
 
 **Operations:**
-- **Add:** Store chunk + embedding + metadata
+- **Add:** Store chunk + embedding + metadata (including subject)
 - **Query:** Find similar chunks for a question
 
 ```python
@@ -215,16 +216,16 @@ import chromadb
 
 # Store a chunk
 collection.add(
-    documents=["Addition is combining two numbers..."],
+    documents=["Habitats are places where organisms live..."],
     embeddings=[[0.023, -0.156, ...]],
-    metadatas=[{"chapter": 1, "page": 5}],
+    metadatas=[{"page": 5, "subject": "the world around us"}],
     ids=["chunk_001"]
 )
 
 # Search for similar chunks
 results = collection.query(
     query_embeddings=[[0.025, -0.150, ...]],  # Question embedding
-    n_results=5  # Get top 5
+    n_results=8  # Get top 8
 )
 ```
 
@@ -246,7 +247,7 @@ def retrieve(question: str) -> list[str]:
     query_embedding = embedder.encode(question)
     
     # 2. Search vector store
-    results = vector_store.query(query_embedding, top_k=5)
+    results = vector_store.query(query_embedding, top_k=8)
     
     # 3. Filter low-quality matches
     relevant = [r for r in results if r.score > 0.3]
@@ -270,7 +271,8 @@ def retrieve(question: str) -> list[str]:
 def generate(question: str, context: list[str]) -> str:
     # Build prompt
     prompt = f"""
-    Context: {' '.join(context)}
+    Context from CBSE Grade 5 textbooks:
+    {' '.join(context)}
     
     Question: {question}
     
@@ -332,52 +334,53 @@ LLMs can only process a limited amount of text (tokens):
 ## File-by-File Breakdown
 
 ```
-maths_tutor/
+maths_tutor/                 # Python package (RAG engine)
 │
-├── __init__.py          # Package initialization
+├── __init__.py              # Package initialization
 │
-├── config.py            # All configuration in one place
-│                        # - Chunk size (800)
-│                        # - Overlap (100)
-│                        # - Model name
-│                        # - Prompt templates
+├── config.py                # All configuration in one place
+│                            # - BOOKS_DIR (all subjects)
+│                            # - Chunk size (800)
+│                            # - Overlap (100)
+│                            # - Model name
+│                            # - Prompt templates
 │
 ├── ingestion/
-│   ├── pdf_parser.py    # Extracts text from PDFs
-│   │                    # Uses: pymupdf (fitz)
-│   │                    # Input: PDF file path
-│   │                    # Output: Raw text
+│   ├── pdf_parser.py        # Extracts text from PDFs
+│   │                        # Uses: pymupdf (fitz)
+│   │                        # Input: PDF file path
+│   │                        # Output: Raw text
 │   │
-│   └── chunker.py       # Splits text into chunks
-│                        # Input: Long text
-│                        # Output: List of chunks
+│   └── chunker.py           # Splits text into chunks
+│                            # Input: Long text
+│                            # Output: List of chunks
 │
 ├── embeddings/
-│   ├── embedder.py      # Converts text to vectors
-│   │                    # Uses: sentence-transformers
-│   │                    # Input: Text string
-│   │                    # Output: 384-dim vector
+│   ├── embedder.py          # Converts text to vectors
+│   │                        # Uses: sentence-transformers
+│   │                        # Input: Text string
+│   │                        # Output: 384-dim vector
 │   │
-│   └── vector_store.py  # Stores/searches vectors
-│                        # Uses: ChromaDB
-│                        # Operations: add, query
+│   └── vector_store.py      # Stores/searches vectors
+│                            # Uses: ChromaDB
+│                            # Operations: add, query
 │
 ├── rag/
-│   ├── retriever.py     # Finds relevant chunks
-│   │                    # Input: Question
-│   │                    # Output: Top 5 chunks
+│   ├── retriever.py         # Finds relevant chunks
+│   │                        # Input: Question
+│   │                        # Output: Top 8 chunks
 │   │
-│   └── generator.py     # Generates responses
-│                        # Uses: Ollama
-│                        # Input: Question + Context
-│                        # Output: Answer
+│   └── generator.py         # Generates responses
+│                            # Uses: Ollama
+│                            # Input: Question + Context
+│                            # Output: Answer
 │
 └── interfaces/
-    ├── cli.py           # Command-line interface
-    │                    # Commands: ask, quiz, practice
+    ├── cli.py               # Command-line interface
+    │                        # Commands: ask, quiz, practice
     │
-    └── web_app.py       # FastAPI web interface
-                         # (Future implementation)
+    └── web_app.py           # FastAPI web interface
+                             # (Future implementation)
 ```
 
 ---
@@ -390,14 +393,15 @@ maths_tutor/
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  1. INGESTION (once):                                           │
-│     PDF → Text → Chunks → Embeddings → ChromaDB                 │
+│     Discover subjects → PDF → Text → Chunks → Embeddings        │
+│     → ChromaDB (with subject metadata)                          │
 │                                                                  │
 │  2. QUERY (every question):                                     │
 │     Question → Embedding → Search → Context → LLM → Answer      │
 │                                                                  │
 │  3. KEY INSIGHT:                                                │
 │     Similar text = Similar embeddings                           │
-│     This enables semantic search!                               │
+│     This enables semantic search across ALL subjects!           │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```

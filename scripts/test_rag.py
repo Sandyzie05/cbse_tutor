@@ -32,7 +32,7 @@ def test_imports():
     console.print("\n[bold]1. Testing Imports[/bold]")
     
     try:
-        from maths_tutor.config import PDF_DIR, CHUNK_SIZE
+        from maths_tutor.config import BOOKS_DIR, CHUNK_SIZE
         from maths_tutor.ingestion.pdf_parser import PDFParser
         from maths_tutor.ingestion.chunker import TextChunker
         from maths_tutor.embeddings.embedder import Embedder
@@ -48,16 +48,17 @@ def test_imports():
 
 
 def test_pdf_parsing():
-    """Test PDF parsing on first available file."""
+    """Test PDF parsing on first available file from any subject."""
     console.print("\n[bold]2. Testing PDF Parser[/bold]")
     
-    from maths_tutor.config import PDF_DIR
+    from maths_tutor.config import BOOKS_DIR
     from maths_tutor.ingestion.pdf_parser import PDFParser
     
-    pdf_files = list(PDF_DIR.glob("*.pdf"))
+    # Find first PDF across all subject directories
+    pdf_files = list(BOOKS_DIR.rglob("*.pdf"))
     
     if not pdf_files:
-        console.print(f"   [yellow]⚠[/yellow] No PDF files found in {PDF_DIR}")
+        console.print(f"   [yellow]⚠[/yellow] No PDF files found in {BOOKS_DIR}")
         return False
     
     parser = PDFParser()
@@ -65,7 +66,7 @@ def test_pdf_parsing():
     
     try:
         content = parser.parse_pdf(test_pdf)
-        console.print(f"   [green]✓[/green] Parsed {test_pdf.name}")
+        console.print(f"   [green]✓[/green] Parsed {test_pdf.name} (from {test_pdf.parent.name})")
         console.print(f"      Pages: {content.total_pages}")
         console.print(f"      Characters: {len(content.full_text)}")
         return True
@@ -257,7 +258,7 @@ def test_generation():
 def main():
     """Run all tests."""
     console.print(Panel.fit(
-        "[bold blue]CBSE Maths Tutor - RAG Pipeline Test[/bold blue]",
+        "[bold blue]CBSE Tutor - RAG Pipeline Test[/bold blue]",
         border_style="blue"
     ))
     

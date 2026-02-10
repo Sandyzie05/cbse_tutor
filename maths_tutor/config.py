@@ -1,5 +1,5 @@
 """
-Configuration settings for the Maths Tutor application.
+Configuration settings for the CBSE Tutor application.
 
 This file centralizes all configuration so you can easily adjust parameters.
 Understanding these settings is important for tuning your RAG system!
@@ -14,8 +14,12 @@ from pathlib import Path
 # Base directory (where this project lives)
 BASE_DIR = Path(__file__).parent.parent
 
-# PDF source directory
-PDF_DIR = BASE_DIR / "cbse-grade-5-maths"
+# Root directory containing all CBSE books (organized by subject subdirectories)
+BOOKS_DIR = BASE_DIR / "cbse-books"
+
+# Subject directories under BOOKS_DIR (auto-discovered at ingestion time)
+# Each subdirectory should follow the pattern: cbse-grade-<N>-<subject>/
+# Example: cbse-grade-5-maths/, cbse-grade-5-english/, etc.
 
 # Data storage directory
 DATA_DIR = BASE_DIR / "data"
@@ -55,7 +59,7 @@ EMBEDDING_DIMENSION = 384
 # =============================================================================
 
 # Collection name for storing book embeddings
-COLLECTION_NAME = "cbse_grade5_maths"
+COLLECTION_NAME = "cbse_grade5_all_subjects"
 
 # =============================================================================
 # OLLAMA CONFIGURATION
@@ -87,9 +91,11 @@ MIN_SIMILARITY_SCORE = 0.3
 # LLM PROMPT TEMPLATES
 # =============================================================================
 
-# System prompt for the maths tutor
-SYSTEM_PROMPT = """You are a friendly and patient maths tutor for Class 5 students (ages 10-11).
-Your job is to help students understand mathematical concepts from their CBSE textbook.
+# System prompt for the CBSE tutor
+SYSTEM_PROMPT = """You are a friendly and patient tutor for Class 5 students (ages 10-11) following the CBSE curriculum.
+Your job is to help students understand concepts from their CBSE textbooks across all subjects including
+Mathematics, English, Arts (Pohela Boishakh, Rangoli, etc.), The World Around Us (EVS/Science & Social Studies),
+and Physical Education & Wellbeing.
 
 IMPORTANT RULES:
 1. Use ONLY the provided context to answer questions
@@ -98,11 +104,13 @@ IMPORTANT RULES:
 4. Use examples when helpful
 5. Be encouraging and supportive
 6. For calculations, show step-by-step working
+7. For language/English questions, be clear about grammar, vocabulary, and comprehension
+8. For science/EVS questions, relate concepts to everyday life
 
 Remember: You're teaching young students, so be patient and clear!"""
 
 # Template for RAG queries
-RAG_PROMPT_TEMPLATE = """Context from the textbook:
+RAG_PROMPT_TEMPLATE = """Context from CBSE Grade 5 textbooks:
 ---
 {context}
 ---
@@ -112,7 +120,7 @@ Student's question: {question}
 Please answer the question based on the context above. If the answer isn't in the context, let the student know."""
 
 # Template for quiz generation
-QUIZ_PROMPT_TEMPLATE = """Context from the textbook:
+QUIZ_PROMPT_TEMPLATE = """Context from CBSE Grade 5 textbooks:
 ---
 {context}
 ---
@@ -131,7 +139,7 @@ Correct Answer: [Letter]
 Make the questions appropriate for Class 5 students (ages 10-11)."""
 
 # Template for practice problems
-PRACTICE_PROMPT_TEMPLATE = """Context from the textbook:
+PRACTICE_PROMPT_TEMPLATE = """Context from CBSE Grade 5 textbooks:
 ---
 {context}
 ---

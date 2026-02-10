@@ -1,5 +1,5 @@
 """
-Entry point for running the maths_tutor package as a module.
+Entry point for running the CBSE Tutor package as a module.
 
 Run with:
     python -m maths_tutor

@@ -1,34 +1,60 @@
-# CBSE Maths AI Tutor
+# CBSE AI Tutor
 
-A RAG (Retrieval-Augmented Generation) chatbot that helps Class 5 students learn mathematics using their CBSE textbook.
+A RAG (Retrieval-Augmented Generation) chatbot that helps Class 5 students learn across all CBSE curriculum subjects using their official textbooks.
 
 ## What is This Project?
 
-This project builds an AI tutor that:
-- Answers questions about the Class 5 Maths textbook
-- Generates quizzes to test understanding
-- Creates practice problems with solutions
-- Explains mathematical concepts step-by-step
+This project builds an AI tutor that covers the **full CBSE Grade 5 curriculum**:
+
+| Subject | Description |
+|---------|-------------|
+| **Mathematics** | Numbers, fractions, geometry, data handling, and more |
+| **English** | Grammar, comprehension, vocabulary, and literature |
+| **Arts** | Creative expression, Indian art forms, culture |
+| **The World Around Us** | Science, environment, social studies (EVS) |
+| **Physical Education & Wellbeing** | Health, fitness, and wellness |
+
+The tutor can:
+- Answer questions from any of the above subjects
+- Generate quizzes to test understanding
+- Create practice problems with solutions
+- Explain concepts step-by-step
 
 ## How It Works
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   PDF Book  │ --> │  Extract &   │ --> │   Vector    │
-│  (16 files) │     │    Chunk     │     │   Store     │
-└─────────────┘     └──────────────┘     └─────────────┘
-                                               │
-┌─────────────┐     ┌──────────────┐           │
-│   Student   │ --> │   Retrieve   │ <---------┘
-│  Question   │     │   Context    │
-└─────────────┘     └──────────────┘
-                           │
-                           v
-                    ┌──────────────┐     ┌─────────────┐
-                    │   Generate   │ --> │   Answer    │
-                    │   (Ollama)   │     │             │
-                    └──────────────┘     └─────────────┘
+┌─────────────────┐     ┌──────────────┐     ┌─────────────┐
+│  PDF Books      │ --> │  Extract &   │ --> │   Vector    │
+│  (5 subjects,   │     │    Chunk     │     │   Store     │
+│   ~60 PDFs)     │     │              │     │  (ChromaDB) │
+└─────────────────┘     └──────────────┘     └─────────────┘
+                                                   │
+┌─────────────────┐     ┌──────────────┐           │
+│    Student      │ --> │   Retrieve   │ <---------┘
+│   Question      │     │   Context    │
+└─────────────────┘     └──────────────┘
+                              │
+                              v
+                       ┌──────────────┐     ┌─────────────┐
+                       │   Generate   │ --> │   Answer    │
+                       │   (Ollama)   │     │             │
+                       └──────────────┘     └─────────────┘
 ```
+
+## Books & Subjects
+
+All textbooks live under `cbse-books/` organized by subject:
+
+```
+cbse-books/
+├── cbse-grade-5-maths/                          # 15 chapter PDFs
+├── cbse-grade-5-english/                        # 10 chapter PDFs
+├── cbse-grade-5-arts/                           # 19 chapter PDFs
+├── cbse-grade-5-theWorldAroundUs/               # 10 chapter PDFs
+└── cbse-grade-5-physicalEducationAndWellbeing/  #  5 chapter PDFs
+```
+
+To add more grades or subjects in the future, simply create a new directory following the naming convention `cbse-grade-<N>-<subject>/` and place the PDF files inside.
 
 ## Prerequisites
 
@@ -44,17 +70,22 @@ This project builds an AI tutor that:
 ### 1. Install Dependencies
 
 ```bash
-cd cbse_books
+cd cbse_tutor
 pip install -r requirements.txt
 ```
 
-### 2. Ingest the Textbook (Run Once)
+### 2. Ingest All Textbooks (Run Once)
 
-This processes all PDF files and stores them in the vector database:
+This processes all PDF files across every subject and stores them in the vector database:
 
 ```bash
 python scripts/ingest_books.py
 ```
+
+The script will:
+- Auto-discover all subject subdirectories under `cbse-books/`
+- Parse, chunk, and embed every PDF
+- Store everything in ChromaDB with subject metadata
 
 ### 3. Start the Tutor
 
@@ -65,32 +96,46 @@ python -m maths_tutor.interfaces.cli
 ## Project Structure
 
 ```
-cbse_books/
-├── cbse-grade-5-maths/     # PDF textbook files
-├── maths_tutor/            # Main Python package
-│   ├── config.py           # Configuration settings
-│   ├── ingestion/          # PDF parsing & chunking
-│   ├── embeddings/         # Vector operations
-│   ├── rag/                # RAG pipeline
-│   └── interfaces/         # CLI & Web interfaces
-├── data/                   # Generated data (ChromaDB)
-├── scripts/                # Utility scripts
-└── ARCHITECTURE.md         # Detailed architecture docs
+cbse_tutor/
+├── cbse-books/            # PDF textbook files (organized by subject)
+│   ├── cbse-grade-5-maths/
+│   ├── cbse-grade-5-english/
+│   ├── cbse-grade-5-arts/
+│   ├── cbse-grade-5-theWorldAroundUs/
+│   └── cbse-grade-5-physicalEducationAndWellbeing/
+├── maths_tutor/           # Main Python package (RAG engine)
+│   ├── config.py          # Configuration settings
+│   ├── ingestion/         # PDF parsing & chunking
+│   ├── embeddings/        # Vector operations (ChromaDB)
+│   ├── rag/               # RAG pipeline (retriever + generator)
+│   └── interfaces/        # CLI & Web interfaces
+├── data/                  # Generated data (ChromaDB vector store)
+├── scripts/               # Utility scripts (ingestion, debug, test)
+└── ARCHITECTURE.md        # Detailed architecture docs
 ```
 
 ## Usage Examples
 
-### Ask a Question
+### Ask a Question (any subject)
+
 ```
-🎓 Maths Tutor > What is the place value of 5 in 3572?
+🎓 CBSE Tutor > What is the place value of 5 in 3572?
 
 The place value of 5 in 3572 is 500 (five hundred).
 In 3572, the 5 is in the hundreds place, so its value is 5 × 100 = 500.
 ```
 
-### Generate a Quiz
 ```
-🎓 Maths Tutor > /quiz fractions 5
+🎓 CBSE Tutor > What are the different types of habitats?
+
+There are mainly three types of habitats: terrestrial (land), aquatic (water),
+and aerial (air). Each habitat has unique conditions...
+```
+
+### Generate a Quiz
+
+```
+🎓 CBSE Tutor > /quiz fractions 5
 
 Creating 5 questions about fractions...
 
@@ -100,8 +145,9 @@ Correct: C
 ```
 
 ### Get Practice Problems
+
 ```
-🎓 Maths Tutor > /practice multiplication 3
+🎓 CBSE Tutor > /practice multiplication 3
 
 Practice Problems:
 1. Calculate 24 × 15
@@ -113,7 +159,7 @@ Practice Problems:
 
 ### What is RAG?
 RAG = Retrieval-Augmented Generation
-1. **Retrieval**: Find relevant information from the textbook
+1. **Retrieval**: Find relevant information from the textbooks
 2. **Augmented**: Add this information to the prompt
 3. **Generation**: Let the LLM generate a response using this context
 
@@ -130,9 +176,11 @@ RAG = Retrieval-Augmented Generation
 ## Configuration
 
 Edit `maths_tutor/config.py` to adjust:
-- Chunk size (default: 800 characters)
-- Number of chunks to retrieve (default: 5)
-- Ollama model (default: llama3.2)
+- `BOOKS_DIR` - Root directory for all textbook PDFs
+- `CHUNK_SIZE` - Chunk size (default: 800 characters)
+- `TOP_K_CHUNKS` - Number of chunks to retrieve (default: 8)
+- `OLLAMA_MODEL` - LLM model (default: llama3.2)
+- `COLLECTION_NAME` - ChromaDB collection name
 
 ## Troubleshooting
 
@@ -154,6 +202,12 @@ Pull the model:
 ollama pull llama3.2
 ```
 
+### Old data from previous Maths-only ingestion
+If you previously ran the project with only Maths books, re-run ingestion to rebuild the vector store with all subjects:
+```bash
+python scripts/ingest_books.py
+```
+
 ## Learning Resources
 
 - [What are Embeddings?](https://vickiboykis.com/what_are_embeddings/)
@@ -164,10 +218,11 @@ ollama pull llama3.2
 ## Next Steps
 
 After mastering this project, you can:
-1. Add support for more textbooks
+1. Add support for more grades (6, 7, 8, etc.)
 2. Implement a web interface with FastAPI
 3. Add image understanding for diagrams
 4. Implement conversation history
 5. Add user progress tracking
+6. Subject-specific quiz modes and practice sessions
 
 Happy Learning! 📚

@@ -3,10 +3,11 @@
 Ingestion Script - Process all PDF files and store in vector database.
 
 This script orchestrates the full ingestion pipeline:
-1. Parse all PDF files in the source directory
-2. Split text into chunks
-3. Generate embeddings for each chunk
-4. Store in ChromaDB
+1. Discover all subject subdirectories under cbse-books/
+2. Parse all PDF files from every subject
+3. Split text into chunks
+4. Generate embeddings for each chunk
+5. Store in ChromaDB with subject metadata
 
 Run this script ONCE to populate the vector database:
     python scripts/ingest_books.py
@@ -14,6 +15,7 @@ Run this script ONCE to populate the vector database:
 The script is idempotent - running it again will clear and rebuild the database.
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -25,7 +27,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 from rich.panel import Panel
 from rich.table import Table
 
-from maths_tutor.config import PDF_DIR, CHUNK_SIZE, CHUNK_OVERLAP, COLLECTION_NAME
+from maths_tutor.config import BOOKS_DIR, CHUNK_SIZE, CHUNK_OVERLAP, COLLECTION_NAME
 from maths_tutor.ingestion.pdf_parser import PDFParser
 from maths_tutor.ingestion.chunker import TextChunker
 from maths_tutor.embeddings.embedder import Embedder
@@ -35,9 +37,52 @@ from maths_tutor.embeddings.vector_store import VectorStore
 console = Console()
 
 
+def _extract_subject_from_dirname(dirname: str) -> str:
+    """
+    Extract a human-readable subject name from a directory name.
+
+    Examples:
+        'cbse-grade-5-maths' -> 'maths'
+        'cbse-grade-5-theWorldAroundUs' -> 'the world around us'
+        'cbse-grade-5-physicalEducationAndWellbeing' -> 'physical education and wellbeing'
+    """
+    # Strip the 'cbse-grade-<N>-' prefix
+    match = re.match(r"cbse-grade-\d+-(.+)", dirname)
+    if not match:
+        return dirname
+    raw = match.group(1)
+    # Split camelCase into words
+    words = re.sub(r"([a-z])([A-Z])", r"\1 \2", raw).lower()
+    return words
+
+
+def discover_subjects(books_dir: Path) -> list[dict]:
+    """
+    Discover all subject directories and their PDF files.
+
+    Returns:
+        List of dicts with keys: subject, directory, pdf_files
+    """
+    subjects = []
+    if not books_dir.exists():
+        return subjects
+
+    for subdir in sorted(books_dir.iterdir()):
+        if not subdir.is_dir():
+            continue
+        pdf_files = sorted(subdir.glob("*.pdf"))
+        if pdf_files:
+            subjects.append({
+                "subject": _extract_subject_from_dirname(subdir.name),
+                "directory": subdir,
+                "pdf_files": pdf_files,
+            })
+    return subjects
+
+
 def ingest_books(clear_existing: bool = True) -> dict:
     """
-    Main ingestion function that processes all PDFs.
+    Main ingestion function that processes all PDFs across all subjects.
     
     Args:
         clear_existing: If True, clear existing data before ingesting
@@ -49,27 +94,46 @@ def ingest_books(clear_existing: bool = True) -> dict:
         "pdfs_processed": 0,
         "total_pages": 0,
         "total_chunks": 0,
+        "subjects_processed": 0,
+        "subjects": [],
         "errors": []
     }
     
     # Print header
     console.print(Panel.fit(
-        "[bold blue]CBSE Maths Book Ingestion[/bold blue]\n"
-        "Processing PDF files and storing in vector database",
+        "[bold blue]CBSE Grade 5 - All Subjects Ingestion[/bold blue]\n"
+        "Processing PDF files from all subjects and storing in vector database",
         border_style="blue"
     ))
     
-    # Check PDF directory
-    if not PDF_DIR.exists():
-        console.print(f"[red]Error: PDF directory not found: {PDF_DIR}[/red]")
+    # Check books directory
+    if not BOOKS_DIR.exists():
+        console.print(f"[red]Error: Books directory not found: {BOOKS_DIR}[/red]")
         return stats
     
-    pdf_files = sorted(PDF_DIR.glob("*.pdf"))
-    if not pdf_files:
-        console.print(f"[red]Error: No PDF files found in {PDF_DIR}[/red]")
+    # Discover subjects
+    subjects = discover_subjects(BOOKS_DIR)
+    if not subjects:
+        console.print(f"[red]Error: No subject directories with PDFs found in {BOOKS_DIR}[/red]")
         return stats
     
-    console.print(f"\n[cyan]Found {len(pdf_files)} PDF files[/cyan]")
+    # Show discovered subjects
+    subject_table = Table(title="Discovered Subjects", show_header=True, header_style="bold cyan")
+    subject_table.add_column("Subject", style="white")
+    subject_table.add_column("PDFs", style="green", justify="right")
+    subject_table.add_column("Directory", style="dim")
+    
+    total_pdfs = 0
+    for subj in subjects:
+        subject_table.add_row(
+            subj["subject"].title(),
+            str(len(subj["pdf_files"])),
+            subj["directory"].name
+        )
+        total_pdfs += len(subj["pdf_files"])
+    
+    console.print(subject_table)
+    console.print(f"\n[cyan]Total: {len(subjects)} subjects, {total_pdfs} PDF files[/cyan]")
     console.print(f"[cyan]Chunk size: {CHUNK_SIZE} chars, Overlap: {CHUNK_OVERLAP} chars[/cyan]\n")
     
     # Initialize components
@@ -86,57 +150,65 @@ def ingest_books(clear_existing: bool = True) -> dict:
         vector_store.delete_collection()
         vector_store = VectorStore()  # Recreate
     
-    # Process each PDF
+    # Process each subject
     all_chunks = []
     all_metadatas = []
     
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        console=console
-    ) as progress:
+    for subj in subjects:
+        subject_name = subj["subject"]
+        pdf_files = subj["pdf_files"]
+        console.print(f"\n[bold magenta]--- {subject_name.title()} ({len(pdf_files)} PDFs) ---[/bold magenta]")
         
-        # Task for PDF processing
-        pdf_task = progress.add_task("[cyan]Processing PDFs...", total=len(pdf_files))
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            console=console
+        ) as progress:
+            
+            pdf_task = progress.add_task(f"[cyan]Processing {subject_name}...", total=len(pdf_files))
+            
+            for pdf_path in pdf_files:
+                progress.update(pdf_task, description=f"[cyan]Parsing {pdf_path.name}...")
+                
+                try:
+                    # Parse PDF
+                    doc_content = parser.parse_pdf(pdf_path)
+                    stats["pdfs_processed"] += 1
+                    stats["total_pages"] += doc_content.total_pages
+                    
+                    # Create chunks with page and subject information
+                    for page in doc_content.pages:
+                        if not page.text.strip():
+                            continue
+                        
+                        page_chunks = chunker.chunk_text(
+                            page.text,
+                            metadata={
+                                "source_file": pdf_path.name,
+                                "page_number": page.page_number,
+                            }
+                        )
+                        
+                        for chunk in page_chunks:
+                            all_chunks.append(chunk.text)
+                            all_metadatas.append({
+                                "source_file": pdf_path.name,
+                                "page_number": page.page_number,
+                                "chunk_index": chunk.chunk_index,
+                                "char_count": chunk.char_count,
+                                "subject": subject_name,
+                            })
+                    
+                except Exception as e:
+                    stats["errors"].append(f"{pdf_path.name}: {str(e)}")
+                    console.print(f"[red]Error processing {pdf_path.name}: {e}[/red]")
+                
+                progress.advance(pdf_task)
         
-        for pdf_path in pdf_files:
-            progress.update(pdf_task, description=f"[cyan]Parsing {pdf_path.name}...")
-            
-            try:
-                # Parse PDF
-                doc_content = parser.parse_pdf(pdf_path)
-                stats["pdfs_processed"] += 1
-                stats["total_pages"] += doc_content.total_pages
-                
-                # Create chunks with page information
-                for page in doc_content.pages:
-                    if not page.text.strip():
-                        continue
-                    
-                    page_chunks = chunker.chunk_text(
-                        page.text,
-                        metadata={
-                            "source_file": pdf_path.name,
-                            "page_number": page.page_number,
-                        }
-                    )
-                    
-                    for chunk in page_chunks:
-                        all_chunks.append(chunk.text)
-                        all_metadatas.append({
-                            "source_file": pdf_path.name,
-                            "page_number": page.page_number,
-                            "chunk_index": chunk.chunk_index,
-                            "char_count": chunk.char_count,
-                        })
-                
-            except Exception as e:
-                stats["errors"].append(f"{pdf_path.name}: {str(e)}")
-                console.print(f"[red]Error processing {pdf_path.name}: {e}[/red]")
-            
-            progress.advance(pdf_task)
+        stats["subjects_processed"] += 1
+        stats["subjects"].append(subject_name)
     
     stats["total_chunks"] = len(all_chunks)
     
@@ -192,6 +264,8 @@ def ingest_books(clear_existing: bool = True) -> dict:
     table.add_column("Metric", style="white")
     table.add_column("Value", style="green")
     
+    table.add_row("Subjects Processed", str(stats["subjects_processed"]))
+    table.add_row("Subjects", ", ".join(s.title() for s in stats["subjects"]))
     table.add_row("PDFs Processed", str(stats["pdfs_processed"]))
     table.add_row("Total Pages", str(stats["total_pages"]))
     table.add_row("Total Chunks", str(stats["total_chunks"]))
@@ -225,7 +299,7 @@ def verify_ingestion() -> None:
         return
     
     # Test query
-    test_query = "What is addition?"
+    test_query = "What topics are covered in this textbook?"
     query_embedding = embedder.embed(test_query)
     
     results = vector_store.search(query_embedding, top_k=3)
@@ -234,8 +308,9 @@ def verify_ingestion() -> None:
     console.print(f"[cyan]Found {len(results)} results:[/cyan]\n")
     
     for i, result in enumerate(results, 1):
+        subject = result.metadata.get("subject", "unknown")
         console.print(f"[bold]Result {i}[/bold] (score: {result.score:.4f})")
-        console.print(f"  Source: {result.source_file}, Page {result.page_number}")
+        console.print(f"  Subject: {subject.title()}, Source: {result.source_file}, Page {result.page_number}")
         preview = result.text[:200].replace('\n', ' ')
         console.print(f"  Preview: {preview}...")
         console.print()
@@ -246,7 +321,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="Ingest CBSE Maths book PDFs into vector database"
+        description="Ingest CBSE Grade 5 book PDFs (all subjects) into vector database"
     )
     parser.add_argument(
         "--verify-only",

@@ -1,5 +1,5 @@
 """
-Interfaces module - User-facing interfaces for the Maths Tutor.
+Interfaces module - User-facing interfaces for the CBSE Tutor.
 
 This module provides:
 1. CLI interface for command-line interaction

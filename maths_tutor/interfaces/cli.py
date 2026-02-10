@@ -3,8 +3,8 @@
 CLI Interface - Interactive command-line chatbot.
 
 This module provides a beautiful terminal interface for interacting
-with the Maths Tutor. It supports:
-- Free-form questions
+with the CBSE Tutor. It supports:
+- Free-form questions across all Grade 5 subjects
 - Quiz generation (/quiz)
 - Practice problems (/practice)
 - Concept explanations (/explain)
@@ -40,14 +40,15 @@ console = Console()
 def print_welcome():
     """Print welcome message and instructions."""
     welcome_text = """
-[bold blue]Welcome to CBSE Maths Tutor![/bold blue]
+[bold blue]Welcome to CBSE Tutor - Grade 5![/bold blue]
 
-I'm here to help you learn Class 5 Mathematics. You can:
+I'm here to help you learn all Class 5 subjects. You can ask about:
 
-• [cyan]Ask questions[/cyan] about any topic in your textbook
-• [cyan]Generate quizzes[/cyan] to test your understanding
-• [cyan]Get practice problems[/cyan] with solutions
-• [cyan]Request explanations[/cyan] of concepts
+• [cyan]Maths[/cyan] - Numbers, fractions, geometry, and more
+• [cyan]English[/cyan] - Grammar, comprehension, and vocabulary
+• [cyan]Arts[/cyan] - Creative expression, culture, and art forms
+• [cyan]The World Around Us[/cyan] - Science, environment, and society
+• [cyan]Physical Education & Wellbeing[/cyan] - Health, fitness, and wellness
 
 [dim]Type /help for all commands[/dim]
 """
@@ -103,7 +104,7 @@ def parse_command(user_input: str) -> tuple[str, list[str]]:
 
 def stream_response(rag: RAGPipeline, question: str):
     """Stream a response with a nice display."""
-    console.print("\n[bold green]🎓 Maths Tutor:[/bold green]")
+    console.print("\n[bold green]🎓 CBSE Tutor:[/bold green]")
     
     try:
         # Get streaming response

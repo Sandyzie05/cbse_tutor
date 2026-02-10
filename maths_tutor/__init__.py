@@ -1,8 +1,8 @@
 """
-CBSE Maths AI Tutor - A RAG-based chatbot for Class 5 Mathematics
+CBSE AI Tutor - A RAG-based chatbot for CBSE Grade 5 (all subjects)
 
 This package provides:
-- PDF ingestion and text extraction
+- PDF ingestion and text extraction across all subjects
 - Text chunking for optimal retrieval
 - Embedding generation using sentence-transformers
 - Vector storage with ChromaDB
