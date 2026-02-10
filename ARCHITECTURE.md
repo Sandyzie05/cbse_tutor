@@ -8,8 +8,9 @@ It's designed to help you understand how all the pieces fit together.
 1. [High-Level Overview](#high-level-overview)
 2. [Data Flow](#data-flow)
 3. [Component Details](#component-details)
-4. [Key Concepts Explained](#key-concepts-explained)
-5. [File-by-File Breakdown](#file-by-file-breakdown)
+4. [Web Interface](#web-interface)
+5. [Key Concepts Explained](#key-concepts-explained)
+6. [File-by-File Breakdown](#file-by-file-breakdown)
 
 ---
 
@@ -286,6 +287,69 @@ def generate(question: str, context: list[str]) -> str:
 
 ---
 
+## Web Interface
+
+### Architecture (`interfaces/web_app.py`)
+
+The web interface is built with **FastAPI** and serves both a browser-based chat UI
+and a set of JSON REST endpoints that can be consumed by any client.
+
+```
+┌──────────────┐        ┌────────────────────────────────────────────┐
+│   Browser    │──GET /─│  FastAPI (web_app.py)                      │
+│   (HTML/JS)  │        │                                            │
+│              │◀──HTML─│  Jinja2 renders templates/index.html       │
+│              │        │                                            │
+│              │──POST──│  /api/ask          → RAGPipeline.query()   │
+│              │──POST──│  /api/ask/stream   → SSE token stream      │
+│              │──POST──│  /api/quiz         → RAGPipeline.quiz()    │
+│              │──POST──│  /api/practice     → RAGPipeline.practice()│
+│              │──POST──│  /api/explain      → RAGPipeline.explain() │
+│              │──GET───│  /api/stats        → VectorStore.get_stats │
+│              │──GET───│  /health           → health check          │
+└──────────────┘        └────────────────────────────────────────────┘
+```
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **App factory** (`create_app()`) | Allows tests to create isolated app instances with mocked RAG/VectorStore |
+| **Lazy-loaded RAG singleton** | Heavy model loading (sentence-transformers, ChromaDB) happens on first request, not at import time |
+| **SSE streaming** (`/api/ask/stream`) | Tokens appear in the browser as the LLM generates them, giving instant feedback |
+| **Pydantic request models** | Input validation (min/max lengths, ranges) handled declaratively |
+| **`asyncio.to_thread`** for non-streaming calls | Keeps the event loop free while Ollama blocks on generation |
+
+### API Endpoints
+
+| Method | Path | Body | Response |
+|--------|------|------|----------|
+| `GET` | `/` | – | HTML chat page |
+| `GET` | `/health` | – | `{ status, chunks_loaded }` |
+| `POST` | `/api/ask` | `{ question, stream? }` | `{ answer, sources, num_chunks }` |
+| `POST` | `/api/ask/stream` | `{ question }` | SSE: `{ token }` … `{ done, sources }` |
+| `POST` | `/api/quiz` | `{ topic, num_questions? }` | `{ quiz }` |
+| `POST` | `/api/practice` | `{ topic, num_problems? }` | `{ practice }` |
+| `POST` | `/api/explain` | `{ concept }` | `{ explanation }` |
+| `GET` | `/api/stats` | – | `{ collection_name, document_count, unique_sources }` |
+
+### Testing
+
+Tests live in `tests/` and use **pytest** with FastAPI's `TestClient`. All external
+dependencies (ChromaDB, sentence-transformers, Ollama) are replaced with lightweight
+fakes defined in `tests/conftest.py`, so the full suite runs in ~5 seconds with zero
+external services.
+
+```bash
+# Run tests
+python -m pytest tests/ -v
+
+# Lint (ruff)
+ruff check maths_tutor/ tests/
+```
+
+---
+
 ## Key Concepts Explained
 
 ### What is a Vector?
@@ -379,8 +443,13 @@ maths_tutor/                 # Python package (RAG engine)
     ├── cli.py               # Command-line interface
     │                        # Commands: ask, quiz, practice
     │
-    └── web_app.py           # FastAPI web interface
-                             # (Future implementation)
+    ├── web_app.py           # FastAPI web interface
+    │                        # REST API + SSE streaming
+    │                        # Serves HTML chat UI
+    │
+    └── templates/
+        └── index.html       # Chat UI (Jinja2 template)
+                             # Vanilla JS, SSE client
 ```
 
 ---

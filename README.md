@@ -89,9 +89,25 @@ The script will:
 
 ### 3. Start the Tutor
 
+**Option A: Command-line interface**
+
 ```bash
 python -m maths_tutor.interfaces.cli
 ```
+
+**Option B: Web interface** (recommended)
+
+```bash
+uvicorn maths_tutor.interfaces.web_app:app --reload
+```
+
+Then open [http://localhost:8000](http://localhost:8000) in your browser.
+
+The web UI provides:
+- A chat interface with real-time streaming answers
+- Mode switcher: Ask / Quiz / Practice / Explain
+- Quick-action chips for common questions
+- Source citations for every answer
 
 ## Project Structure
 
@@ -109,8 +125,13 @@ cbse_tutor/
 │   ├── embeddings/        # Vector operations (ChromaDB)
 │   ├── rag/               # RAG pipeline (retriever + generator)
 │   └── interfaces/        # CLI & Web interfaces
+│       ├── cli.py         # Terminal chatbot
+│       ├── web_app.py     # FastAPI app (REST + SSE streaming)
+│       └── templates/     # Jinja2 HTML templates
+├── tests/                 # Unit tests (pytest)
 ├── data/                  # Generated data (ChromaDB vector store)
 ├── scripts/               # Utility scripts (ingestion, debug, test)
+├── pyproject.toml         # Linting (ruff) & test config
 └── ARCHITECTURE.md        # Detailed architecture docs
 ```
 
@@ -208,6 +229,13 @@ If you previously ran the project with only Maths books, re-run ingestion to reb
 python scripts/ingest_books.py
 ```
 
+### Re-ingestion after upgrades
+The ingestion script now enriches every chunk with a subject/book preamble (e.g. `[English - Santoor (Grade 5)]`) and tags chunks with `content_type` metadata (`table_of_contents`, `preface`, `chapter`). If you are upgrading from an older version, you **must** re-run ingestion to rebuild the vector store:
+```bash
+python scripts/ingest_books.py
+```
+This ensures the LLM can retrieve table-of-contents listings and refer to sources by subject name instead of raw filenames.
+
 ## Learning Resources
 
 - [What are Embeddings?](https://vickiboykis.com/what_are_embeddings/)
@@ -215,14 +243,44 @@ python scripts/ingest_books.py
 - [Ollama Documentation](https://ollama.ai/docs)
 - [Sentence Transformers](https://www.sbert.net/)
 
+## Development
+
+### Running Tests
+
+```bash
+python -m pytest tests/ -v
+```
+
+### Linting
+
+```bash
+# Check
+ruff check maths_tutor/ tests/
+
+# Auto-fix
+ruff check maths_tutor/ tests/ --fix
+```
+
+### Web API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Chat UI (HTML) |
+| `GET` | `/health` | Health check |
+| `POST` | `/api/ask` | Ask a question (JSON response) |
+| `POST` | `/api/ask/stream` | Ask with Server-Sent Events streaming |
+| `POST` | `/api/quiz` | Generate quiz on a topic |
+| `POST` | `/api/practice` | Generate practice problems |
+| `POST` | `/api/explain` | Explain a concept |
+| `GET` | `/api/stats` | Vector store statistics |
+
 ## Next Steps
 
 After mastering this project, you can:
 1. Add support for more grades (6, 7, 8, etc.)
-2. Implement a web interface with FastAPI
-3. Add image understanding for diagrams
-4. Implement conversation history
-5. Add user progress tracking
-6. Subject-specific quiz modes and practice sessions
+2. Add image understanding for diagrams
+3. Implement conversation history
+4. Add user progress tracking
+5. Subject-specific quiz modes and practice sessions
 
 Happy Learning! 📚

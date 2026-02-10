@@ -283,14 +283,18 @@ class VectorStore:
     def delete_collection(self) -> None:
         """
         Delete the entire collection.
-        
+
         WARNING: This permanently deletes all documents!
         """
         self._client.delete_collection(self.collection_name)
-        # Recreate empty collection
+        # Recreate empty collection – MUST keep hnsw:space=cosine so that
+        # the similarity conversion (1 - distance) gives meaningful 0-1 scores.
         self._collection = self._client.get_or_create_collection(
             name=self.collection_name,
-            metadata={"description": "CBSE Grade 5 textbook chunks (all subjects)"}
+            metadata={
+                "description": "CBSE Grade 5 textbook chunks (all subjects)",
+                "hnsw:space": "cosine",
+            },
         )
     
     def get_all_ids(self) -> list[str]:

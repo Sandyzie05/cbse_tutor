@@ -1,10 +1,10 @@
-# CBSE Maths AI Tutor - Dependencies
+# CBSE AI Tutor - Dependencies
 # ===================================
 
 # Core - PDF Processing
 pymupdf>=1.24.0          # PDF parsing (imported as 'fitz')
 
-# Core - Embeddings (You know this from Week 1!)
+# Core - Embeddings
 sentence-transformers>=2.2.0    # Generate text embeddings
 torch>=2.0.0                    # Required by sentence-transformers
 
@@ -18,12 +18,20 @@ ollama>=0.1.0            # Python client for Ollama
 rich>=13.0.0             # Beautiful terminal output
 typer>=0.9.0             # CLI framework with type hints
 
-# Web Interface (Phase 5 - Future)
+# Web Interface
 fastapi>=0.109.0         # Web framework
 uvicorn>=0.27.0          # ASGI server
 jinja2>=3.1.0            # HTML templates
+python-multipart>=0.0.6  # Form data support for FastAPI
 
 # Utilities
 python-dotenv>=1.0.0     # Environment variable management
 numpy>=1.24.0            # Numerical operations
 tqdm>=4.66.0             # Progress bars
+
+# Testing
+pytest>=8.0.0            # Test framework
+httpx>=0.27.0            # HTTP client for testing FastAPI
+
+# Linting
+ruff>=0.4.0              # Fast Python linter + formatter
