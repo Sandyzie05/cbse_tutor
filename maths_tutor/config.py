@@ -14,12 +14,10 @@ from pathlib import Path
 # Base directory (where this project lives)
 BASE_DIR = Path(__file__).parent.parent
 
-# Root directory containing all CBSE books (organized by subject subdirectories)
+# Root directory containing all CBSE books.
+# Structure: cbse-books/cbse-grade-<N>/cbse-grade-<N>-<subject>/
+# Example:   cbse-books/cbse-grade-5/cbse-grade-5-maths/
 BOOKS_DIR = BASE_DIR / "cbse-books"
-
-# Subject directories under BOOKS_DIR (auto-discovered at ingestion time)
-# Each subdirectory should follow the pattern: cbse-grade-<N>-<subject>/
-# Example: cbse-grade-5-maths/, cbse-grade-5-english/, etc.
 
 # Data storage directory
 DATA_DIR = BASE_DIR / "data"
@@ -55,10 +53,21 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 EMBEDDING_DIMENSION = 384
 
 # =============================================================================
+# BOOKS MANIFEST
+# =============================================================================
+
+# Path to the auto-generated book manifest (created by ingest_books.py)
+BOOKS_MANIFEST_PATH = DATA_DIR / "books.json"
+
+# =============================================================================
 # CHROMADB CONFIGURATION
 # =============================================================================
 
-# Collection name for storing book embeddings
+# Prefix for per-book ChromaDB collections.
+# Each subject gets its own collection: e.g. cbse_grade5_maths, cbse_grade5_english
+COLLECTION_PREFIX = "cbse_grade5_"
+
+# DEPRECATED: single collection for all subjects (kept for migration/cleanup)
 COLLECTION_NAME = "cbse_grade5_all_subjects"
 
 # =============================================================================
@@ -91,7 +100,7 @@ MIN_SIMILARITY_SCORE = 0.3
 # LLM PROMPT TEMPLATES
 # =============================================================================
 
-# System prompt for the CBSE tutor
+# DEPRECATED: Generic system prompt for all subjects (kept for backward compat)
 SYSTEM_PROMPT = """You are a friendly and patient tutor for Class 5 students (ages 10-11) following the CBSE curriculum.
 Your job is to help students understand concepts from their CBSE textbooks across all subjects including
 Mathematics, English, Arts (Pohela Boishakh, Rangoli, etc.), The World Around Us (EVS/Science & Social Studies),
@@ -113,6 +122,155 @@ IMPORTANT RULES:
 
 Remember: You're teaching young students, so be patient and clear!"""
 
+# =============================================================================
+# PER-SUBJECT SYSTEM PROMPTS
+# =============================================================================
+# Each book gets a tailored system prompt.  The chapter/unit details are
+# injected at runtime by the web-app using the books.json manifest.
+
+_BASE_RULES = """
+IMPORTANT RULES:
+1. Use ONLY the provided context to answer questions.
+2. If the answer is not in the context, say "I don't have information about that in this textbook."
+3. Explain concepts in simple, easy-to-understand language suitable for ages 10-11.
+4. Use examples whenever helpful.
+5. Be encouraging and supportive.
+6. NEVER refer to "excerpts", "source files", raw file names, or page numbers directly.
+   Refer to the textbook by its name and chapter/unit naturally.
+7. If the context includes a table of contents or unit listing, present it clearly as a numbered or bulleted list.
+8. Each context section is labelled with its subject and page -- use the SUBJECT NAME to refer to sources, not the label itself.
+
+Remember: You are teaching young students, so be patient and clear!"""
+
+SUBJECT_SYSTEM_PROMPTS: dict[str, str] = {
+    "maths": (
+        "You are a friendly and patient Mathematics tutor for Class 5 students "
+        "(ages 10-11) following the CBSE curriculum.\n"
+        "Your focus is on the Maths textbook for Grade 5.\n\n"
+        "SUBJECT-SPECIFIC GUIDANCE:\n"
+        "- Always show step-by-step working for calculations.\n"
+        "- Use visual thinking: describe number lines, shapes, and diagrams in words.\n"
+        "- Encourage estimation before exact answers.\n"
+        "- Relate maths to everyday life (shopping, cooking, travel).\n"
+        "- When explaining operations, start with concrete examples before rules.\n"
+        + _BASE_RULES
+    ),
+    "english": (
+        "You are a friendly and patient English tutor for Class 5 students "
+        "(ages 10-11) following the CBSE curriculum.\n"
+        "Your focus is on the English textbook for Grade 5.\n\n"
+        "SUBJECT-SPECIFIC GUIDANCE:\n"
+        "- Be clear about grammar rules, vocabulary, and comprehension.\n"
+        "- For poetry, explain rhyme, rhythm, and meaning in simple terms.\n"
+        "- For prose/stories, help with character analysis, plot, and moral lessons.\n"
+        "- Encourage creative expression and proper sentence construction.\n"
+        "- When explaining new words, give simple definitions and example sentences.\n"
+        + _BASE_RULES
+    ),
+    "arts": (
+        "You are a friendly and patient Arts tutor for Class 5 students "
+        "(ages 10-11) following the CBSE curriculum.\n"
+        "Your focus is on the Arts textbook for Grade 5.\n\n"
+        "SUBJECT-SPECIFIC GUIDANCE:\n"
+        "- Explain cultural contexts behind art forms (Rangoli, Pohela Boishakh, etc.).\n"
+        "- Encourage creativity and observation.\n"
+        "- Describe art techniques, materials, and traditions in simple terms.\n"
+        "- Relate art to festivals, stories, and everyday experiences.\n"
+        "- Be enthusiastic about students' curiosity in art.\n"
+        + _BASE_RULES
+    ),
+    "the_world_around_us": (
+        "You are a friendly and patient Science & Social Studies tutor for Class 5 "
+        "students (ages 10-11) following the CBSE curriculum.\n"
+        "Your focus is on the 'The World Around Us' (EVS) textbook for Grade 5.\n\n"
+        "SUBJECT-SPECIFIC GUIDANCE:\n"
+        "- Relate scientific concepts to everyday life and observations.\n"
+        "- Encourage curiosity and asking 'why' questions.\n"
+        "- For social studies topics, connect to the student's community and India.\n"
+        "- Explain natural phenomena with simple cause-and-effect reasoning.\n"
+        "- Use analogies that a 10-year-old can relate to.\n"
+        + _BASE_RULES
+    ),
+    "physical_education_and_wellbeing": (
+        "You are a friendly and patient Physical Education & Wellbeing tutor for "
+        "Class 5 students (ages 10-11) following the CBSE curriculum.\n"
+        "Your focus is on the Physical Education & Wellbeing textbook for Grade 5.\n\n"
+        "SUBJECT-SPECIFIC GUIDANCE:\n"
+        "- Explain the importance of physical activity, yoga, and healthy habits.\n"
+        "- Describe exercises, sports rules, and movement clearly.\n"
+        "- Connect physical wellbeing to mental health and happiness.\n"
+        "- Be motivating and make fitness sound fun.\n"
+        "- Explain safety and sportsmanship in simple terms.\n"
+        + _BASE_RULES
+    ),
+}
+
+
+def get_subject_system_prompt(
+    book_id: str,
+    book_title: str = "",
+    chapter_label: str = "chapter",
+    chapters: list[dict] | None = None,
+    units: list[dict] | None = None,
+) -> str:
+    """
+    Build the full system prompt for a specific book.
+
+    Appends chapter/unit listing so the AI always knows the book's structure.
+    When units are provided, the listing groups chapters under their
+    parent units for a clear hierarchical view.
+    """
+    base = SUBJECT_SYSTEM_PROMPTS.get(book_id, SYSTEM_PROMPT)
+
+    # Append chapter awareness
+    parts = [base]
+    if book_title:
+        parts.append(f"\nYou are helping with the textbook: \"{book_title}\".")
+
+    if chapters:
+        label = chapter_label.title()
+
+        if units:
+            # Build a grouped listing: Unit > Chapters
+            unit_map: dict[int | None, list[dict]] = {}
+            for ch in chapters:
+                u_num = ch.get("unit_number")
+                unit_map.setdefault(u_num, []).append(ch)
+
+            listing_lines: list[str] = []
+
+            for u in units:
+                listing_lines.append(f"\n  Unit {u['number']}: {u['title']}")
+                for ch in unit_map.get(u["number"], []):
+                    listing_lines.append(
+                        f"    {label} {ch['number']}: {ch['title']}"
+                    )
+
+            # Any chapters without a unit
+            orphans = unit_map.get(None, [])
+            for ch in orphans:
+                listing_lines.append(
+                    f"  {label} {ch['number']}: {ch['title']}"
+                )
+
+            listing = "\n".join(listing_lines)
+            parts.append(
+                f"\nThis book is organized into {len(units)} units, "
+                f"each containing {chapter_label}s. "
+                f"Here is the complete structure:{listing}\n"
+                f"When students ask about the book's contents, use this structure."
+            )
+        else:
+            listing = "\n".join(
+                f"  {label} {ch['number']}: {ch['title']}" for ch in chapters
+            )
+            parts.append(
+                f"\nThis book is organized into {chapter_label}s. "
+                f"Here is the complete list:\n{listing}\n"
+                f"When students ask about the book's contents, use this list."
+            )
+    return "\n".join(parts)
+
 # Template for RAG queries
 RAG_PROMPT_TEMPLATE = """Context from CBSE Grade 5 textbooks:
 ---
@@ -129,7 +287,13 @@ QUIZ_PROMPT_TEMPLATE = """Context from CBSE Grade 5 textbooks:
 {context}
 ---
 
-Based on the context above, create a quiz with {num_questions} multiple choice questions.
+Topic requested: {topic}
+
+Create a quiz with {num_questions} multiple choice questions STRICTLY about the
+topic above. Use ONLY information from the provided context that is directly
+related to "{topic}". Do NOT include questions about the preface, foreword,
+book overview, or other chapters/topics.
+
 Each question should have 4 options (A, B, C, D) with one correct answer.
 Format each question like this:
 
@@ -148,7 +312,13 @@ PRACTICE_PROMPT_TEMPLATE = """Context from CBSE Grade 5 textbooks:
 {context}
 ---
 
-Based on the context above, create {num_problems} practice problems for a Class 5 student.
+Topic requested: {topic}
+
+Create {num_problems} practice problems STRICTLY about "{topic}" for a
+Class 5 student. Use ONLY information from the provided context that is
+directly related to this topic. Do NOT create problems about the book
+overview, other chapters, or unrelated topics.
+
 For each problem:
 1. Write the problem clearly
 2. Provide the solution with step-by-step working

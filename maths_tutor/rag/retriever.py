@@ -105,6 +105,7 @@ class Retriever:
         vector_store: VectorStore | None = None,
         top_k: int | None = None,
         min_score: float | None = None,
+        collection_name: str | None = None,
     ):
         """
         Initialize the retriever.
@@ -114,9 +115,16 @@ class Retriever:
             vector_store: VectorStore instance (creates new if not provided)
             top_k: Number of chunks to retrieve
             min_score: Minimum similarity score threshold
+            collection_name: ChromaDB collection to use (ignored if vector_store given)
         """
         self.embedder = embedder or get_embedder()
-        self.vector_store = vector_store or VectorStore()
+        if vector_store is not None:
+            self.vector_store = vector_store
+        else:
+            kwargs: dict = {}
+            if collection_name:
+                kwargs["collection_name"] = collection_name
+            self.vector_store = VectorStore(**kwargs)
         self.top_k = top_k or TOP_K_CHUNKS
         self.min_score = min_score or MIN_SIMILARITY_SCORE
 

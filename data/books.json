@@ -1,0 +1,501 @@
+{
+  "books": [
+    {
+      "id": "arts",
+      "title": "Textbook of Arts",
+      "subject": "Arts",
+      "collection_name": "cbse_grade5_arts",
+      "chapter_label": "chapter",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "Objects on the Move",
+          "unit_number": 1,
+          "unit_title": "Visual Arts"
+        },
+        {
+          "number": 2,
+          "title": "Peeping Out of the Window",
+          "unit_number": 1,
+          "unit_title": "Visual Arts"
+        },
+        {
+          "number": 3,
+          "title": "Picturing Stories",
+          "unit_number": 1,
+          "unit_title": "Visual Arts"
+        },
+        {
+          "number": 4,
+          "title": "Imaginary Beings",
+          "unit_number": 1,
+          "unit_title": "Visual Arts"
+        },
+        {
+          "number": 5,
+          "title": "Spreading the Message",
+          "unit_number": 1,
+          "unit_title": "Visual Arts"
+        },
+        {
+          "number": 6,
+          "title": "Create a Scene",
+          "unit_number": 2,
+          "unit_title": "Theatre"
+        },
+        {
+          "number": 7,
+          "title": "Stitch it for a Story",
+          "unit_number": 2,
+          "unit_title": "Theatre"
+        },
+        {
+          "number": 8,
+          "title": "Time, Team, Technique",
+          "unit_number": 2,
+          "unit_title": "Theatre"
+        },
+        {
+          "number": 9,
+          "title": "View and Review",
+          "unit_number": 2,
+          "unit_title": "Theatre"
+        },
+        {
+          "number": 10,
+          "title": "Sing and Play",
+          "unit_number": 3,
+          "unit_title": "Music"
+        },
+        {
+          "number": 11,
+          "title": "Music Around Me",
+          "unit_number": 3,
+          "unit_title": "Music"
+        },
+        {
+          "number": 12,
+          "title": "Sounds and Instruments",
+          "unit_number": 3,
+          "unit_title": "Music"
+        },
+        {
+          "number": 13,
+          "title": "Building Blocks",
+          "unit_number": 3,
+          "unit_title": "Music"
+        },
+        {
+          "number": 14,
+          "title": "Ideas and Inspiration",
+          "unit_number": 3,
+          "unit_title": "Music"
+        },
+        {
+          "number": 15,
+          "title": "My Everyday Activities in Modes of Dance",
+          "unit_number": 4,
+          "unit_title": "Dance"
+        },
+        {
+          "number": 16,
+          "title": "Dancing with Rhythm and Tempos",
+          "unit_number": 4,
+          "unit_title": "Dance"
+        },
+        {
+          "number": 17,
+          "title": "Dances of My Nation",
+          "unit_number": 4,
+          "unit_title": "Dance"
+        },
+        {
+          "number": 18,
+          "title": "My Dance Expresses Emotions and Narrates Stories",
+          "unit_number": 4,
+          "unit_title": "Dance"
+        },
+        {
+          "number": 19,
+          "title": "My Dance and Your Dance",
+          "unit_number": 4,
+          "unit_title": "Dance"
+        }
+      ],
+      "chunk_count": 297,
+      "pdf_count": 20,
+      "units": [
+        {
+          "number": 1,
+          "title": "Visual Arts"
+        },
+        {
+          "number": 2,
+          "title": "Theatre"
+        },
+        {
+          "number": 3,
+          "title": "Music"
+        },
+        {
+          "number": 4,
+          "title": "Dance"
+        }
+      ]
+    },
+    {
+      "id": "english",
+      "title": "Santoor",
+      "subject": "English",
+      "collection_name": "cbse_grade5_english",
+      "chapter_label": "chapter",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "Papa's Spectacles",
+          "unit_number": 1,
+          "unit_title": "Let's Have Fun"
+        },
+        {
+          "number": 2,
+          "title": "Gone with the Scooter",
+          "unit_number": 1,
+          "unit_title": "Let's Have Fun"
+        },
+        {
+          "number": 3,
+          "title": "The Rainbow",
+          "unit_number": 2,
+          "unit_title": "My Colourful World"
+        },
+        {
+          "number": 4,
+          "title": "The Wise Parrot",
+          "unit_number": 2,
+          "unit_title": "My Colourful World"
+        },
+        {
+          "number": 5,
+          "title": "The Frog",
+          "unit_number": 3,
+          "unit_title": "Water"
+        },
+        {
+          "number": 6,
+          "title": "What a Tank!",
+          "unit_number": 3,
+          "unit_title": "Water"
+        },
+        {
+          "number": 7,
+          "title": "Gilli Danda",
+          "unit_number": 4,
+          "unit_title": "Ups and Downs"
+        },
+        {
+          "number": 8,
+          "title": "The Decision of the Panchayat",
+          "unit_number": 4,
+          "unit_title": "Ups and Downs"
+        },
+        {
+          "number": 9,
+          "title": "Vocation",
+          "unit_number": 5,
+          "unit_title": "Work is Worship"
+        },
+        {
+          "number": 10,
+          "title": "Glass Bangles",
+          "unit_number": 5,
+          "unit_title": "Work is Worship"
+        }
+      ],
+      "chunk_count": 224,
+      "pdf_count": 11,
+      "units": [
+        {
+          "number": 1,
+          "title": "Let's Have Fun"
+        },
+        {
+          "number": 2,
+          "title": "My Colourful World"
+        },
+        {
+          "number": 3,
+          "title": "Water"
+        },
+        {
+          "number": 4,
+          "title": "Ups and Downs"
+        },
+        {
+          "number": 5,
+          "title": "Work is Worship"
+        }
+      ]
+    },
+    {
+      "id": "maths",
+      "title": "MATHS MELA",
+      "subject": "Mathematics",
+      "collection_name": "cbse_grade5_maths",
+      "chapter_label": "chapter",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "We the Travellers — I",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 2,
+          "title": "Fractions",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 3,
+          "title": "Angles as Turns",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 4,
+          "title": "We the Travellers — II",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 5,
+          "title": "Far and Near",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 6,
+          "title": "The Dairy Farm",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 7,
+          "title": "Shapes and Patterns",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 8,
+          "title": "Weight and Capacity",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 9,
+          "title": "Coconut Farm",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 10,
+          "title": "Symmetrical Designs",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 11,
+          "title": "Grandmother's Quilt",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 12,
+          "title": "Racing Seconds",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 13,
+          "title": "Animal Jumps",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 14,
+          "title": "Maps and Locations",
+          "unit_number": null,
+          "unit_title": null
+        },
+        {
+          "number": 15,
+          "title": "Data Through Pictures",
+          "unit_number": null,
+          "unit_title": null
+        }
+      ],
+      "chunk_count": 362,
+      "pdf_count": 16
+    },
+    {
+      "id": "physical_education_and_wellbeing",
+      "title": "Khel Yoga",
+      "subject": "Physical Education & Wellbeing",
+      "collection_name": "cbse_grade5_physical_education_and_wellbeing",
+      "chapter_label": "chapter",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "Throwing and Catching",
+          "unit_number": 1,
+          "unit_title": "Basic Motor Movements"
+        },
+        {
+          "number": 2,
+          "title": "Kicking and Receiving",
+          "unit_number": 1,
+          "unit_title": "Basic Motor Movements"
+        },
+        {
+          "number": 3,
+          "title": "Strike the Object",
+          "unit_number": 1,
+          "unit_title": "Basic Motor Movements"
+        },
+        {
+          "number": 4,
+          "title": "Little Steps",
+          "unit_number": 1,
+          "unit_title": "Basic Motor Movements"
+        },
+        {
+          "number": 5,
+          "title": "Local and Traditional Games",
+          "unit_number": 2,
+          "unit_title": "Our Games"
+        },
+        {
+          "number": 6,
+          "title": "Yoga for Daily Life",
+          "unit_number": 3,
+          "unit_title": "Yoga"
+        },
+        {
+          "number": 7,
+          "title": "Yoga Sadhana",
+          "unit_number": 3,
+          "unit_title": "Yoga"
+        }
+      ],
+      "chunk_count": 302,
+      "pdf_count": 5,
+      "units": [
+        {
+          "number": 1,
+          "title": "Basic Motor Movements"
+        },
+        {
+          "number": 2,
+          "title": "Our Games"
+        },
+        {
+          "number": 3,
+          "title": "Yoga"
+        }
+      ]
+    },
+    {
+      "id": "the_world_around_us",
+      "title": "Our Wondrous World",
+      "subject": "The World Around Us",
+      "collection_name": "cbse_grade5_the_world_around_us",
+      "chapter_label": "chapter",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "Water — The Essence of Life",
+          "unit_number": 1,
+          "unit_title": "Life Around Us"
+        },
+        {
+          "number": 2,
+          "title": "Journey of a River",
+          "unit_number": 1,
+          "unit_title": "Life Around Us"
+        },
+        {
+          "number": 3,
+          "title": "The Mystery of Food",
+          "unit_number": 2,
+          "unit_title": "Health and Well-being"
+        },
+        {
+          "number": 4,
+          "title": "Our School — A Happy Place",
+          "unit_number": 2,
+          "unit_title": "Health and Well-being"
+        },
+        {
+          "number": 5,
+          "title": "Our Vibrant Country",
+          "unit_number": 3,
+          "unit_title": "Incredible India"
+        },
+        {
+          "number": 6,
+          "title": "Some Unique Places",
+          "unit_number": 3,
+          "unit_title": "Incredible India"
+        },
+        {
+          "number": 7,
+          "title": "Energy — How Things Work",
+          "unit_number": 4,
+          "unit_title": "Things Around Us"
+        },
+        {
+          "number": 8,
+          "title": "Clothes — How Things are Made",
+          "unit_number": 4,
+          "unit_title": "Things Around Us"
+        },
+        {
+          "number": 9,
+          "title": "Rhythms of Nature",
+          "unit_number": 5,
+          "unit_title": "Our Amazing Planet"
+        },
+        {
+          "number": 10,
+          "title": "Earth — Our Shared Home",
+          "unit_number": 5,
+          "unit_title": "Our Amazing Planet"
+        }
+      ],
+      "chunk_count": 323,
+      "pdf_count": 11,
+      "units": [
+        {
+          "number": 1,
+          "title": "Life Around Us"
+        },
+        {
+          "number": 2,
+          "title": "Health and Well-being"
+        },
+        {
+          "number": 3,
+          "title": "Incredible India"
+        },
+        {
+          "number": 4,
+          "title": "Things Around Us"
+        },
+        {
+          "number": 5,
+          "title": "Our Amazing Planet"
+        }
+      ]
+    }
+  ]
+}

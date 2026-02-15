@@ -50,7 +50,8 @@ class Generator:
     def __init__(
         self,
         model: str | None = None,
-        retriever: Retriever | None = None
+        retriever: Retriever | None = None,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the generator.
@@ -58,9 +59,11 @@ class Generator:
         Args:
             model: Ollama model name (uses config default if not provided)
             retriever: Retriever instance for getting context
+            system_prompt: Per-subject system prompt (uses global default if not provided)
         """
         self.model = model or OLLAMA_MODEL
         self.retriever = retriever or Retriever()
+        self.system_prompt = system_prompt or SYSTEM_PROMPT
         self._check_ollama()
     
     def _check_ollama(self) -> bool:
@@ -143,7 +146,7 @@ class Generator:
         )
         
         # Use default system prompt if not provided
-        system = system_prompt or SYSTEM_PROMPT
+        system = system_prompt or self.system_prompt
         
         try:
             if stream:
@@ -216,10 +219,11 @@ class Generator:
         # Build quiz prompt
         prompt = QUIZ_PROMPT_TEMPLATE.format(
             context=context,
-            num_questions=num_questions
+            topic=topic,
+            num_questions=num_questions,
         )
         
-        return self._generate_response(prompt, SYSTEM_PROMPT)
+        return self._generate_response(prompt, self.system_prompt)
     
     def generate_practice(
         self,
@@ -243,10 +247,11 @@ class Generator:
         # Build practice prompt
         prompt = PRACTICE_PROMPT_TEMPLATE.format(
             context=context,
-            num_problems=num_problems
+            topic=topic,
+            num_problems=num_problems,
         )
         
-        return self._generate_response(prompt, SYSTEM_PROMPT)
+        return self._generate_response(prompt, self.system_prompt)
     
     def explain(self, concept: str, simple: bool = True) -> str:
         """
@@ -259,8 +264,8 @@ class Generator:
         Returns:
             Explanation of the concept
         """
-        # Get context
-        retrieval = self.retriever.retrieve(f"Explain {concept}")
+        # Get context scoped to the concept
+        retrieval = self.retriever.retrieve_for_topic(concept)
         context = retrieval.format_for_prompt()
         
         # Build explanation prompt
@@ -270,15 +275,19 @@ class Generator:
 {context}
 ---
 
-Please explain {concept} in {complexity}.
+Please explain "{concept}" in {complexity}.
+Use ONLY information from the context above that directly relates to
+"{concept}". Do NOT include information about the book's preface,
+foreword, or other unrelated chapters.
+
 Include:
-1. A simple definition
+1. A simple definition or overview
 2. A real-world example
-3. Why it's useful
+3. Why it's useful or interesting
 
 Keep your explanation friendly and encouraging!"""
         
-        return self._generate_response(prompt, SYSTEM_PROMPT)
+        return self._generate_response(prompt, self.system_prompt)
 
 
 class RAGPipeline:
@@ -296,7 +305,9 @@ class RAGPipeline:
     def __init__(
         self,
         model: str | None = None,
-        top_k: int | None = None
+        top_k: int | None = None,
+        collection_name: str | None = None,
+        system_prompt: str | None = None,
     ):
         """
         Initialize the RAG pipeline.
@@ -304,9 +315,13 @@ class RAGPipeline:
         Args:
             model: Ollama model to use
             top_k: Number of chunks to retrieve
+            collection_name: ChromaDB collection (per-subject)
+            system_prompt: Per-subject system prompt
         """
-        self.retriever = Retriever(top_k=top_k)
-        self.generator = Generator(model=model, retriever=self.retriever)
+        self.retriever = Retriever(top_k=top_k, collection_name=collection_name)
+        self.generator = Generator(
+            model=model, retriever=self.retriever, system_prompt=system_prompt,
+        )
     
     def query(
         self,

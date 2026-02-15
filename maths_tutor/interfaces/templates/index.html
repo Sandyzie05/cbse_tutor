@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CBSE AI Tutor - Grade 5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ══════════════════════════════════════════════════════════
+       DESIGN SYSTEM — CSS Variables
+       ══════════════════════════════════════════════════════════ */
+    :root {
+      /* Light theme */
+      --bg-primary: #f0f2f8;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f8f9fc;
+      --bg-hover: #eef0f6;
+      --bg-chat: #f5f6fa;
+
+      --text-primary: #1a1d2e;
+      --text-secondary: #4a5068;
+      --text-tertiary: #8890a6;
+      --text-inverse: #ffffff;
+
+      --border-primary: #e2e5f0;
+      --border-secondary: #ced2e0;
+
+      --accent-primary: #6c5ce7;
+      --accent-primary-hover: #5a4bd6;
+      --accent-primary-light: rgba(108, 92, 231, 0.08);
+      --accent-primary-medium: rgba(108, 92, 231, 0.15);
+
+      --shadow-sm: 0 1px 3px rgba(26, 29, 46, 0.04);
+      --shadow-md: 0 4px 16px rgba(26, 29, 46, 0.06);
+      --shadow-lg: 0 8px 32px rgba(26, 29, 46, 0.08);
+      --shadow-xl: 0 16px 48px rgba(26, 29, 46, 0.12);
+      --shadow-card-hover: 0 12px 40px rgba(108, 92, 231, 0.15);
+
+      --user-msg-bg: #6c5ce7;
+      --user-msg-text: #ffffff;
+      --bot-msg-bg: #ffffff;
+      --bot-msg-text: #1a1d2e;
+      --bot-msg-border: #e2e5f0;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.25s ease;
+      --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Dark theme */
+    [data-theme="dark"] {
+      --bg-primary: #0f1117;
+      --bg-secondary: #1a1d2e;
+      --bg-tertiary: #222539;
+      --bg-hover: #2a2e44;
+      --bg-chat: #141621;
+
+      --text-primary: #e8eaf0;
+      --text-secondary: #a0a6be;
+      --text-tertiary: #6b7190;
+      --text-inverse: #ffffff;
+
+      --border-primary: #2a2e44;
+      --border-secondary: #363b54;
+
+      --accent-primary: #8b7cf7;
+      --accent-primary-hover: #7c6bf0;
+      --accent-primary-light: rgba(139, 124, 247, 0.08);
+      --accent-primary-medium: rgba(139, 124, 247, 0.18);
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4);
+      --shadow-card-hover: 0 12px 40px rgba(139, 124, 247, 0.2);
+
+      --user-msg-bg: #6c5ce7;
+      --user-msg-text: #ffffff;
+      --bot-msg-bg: #1a1d2e;
+      --bot-msg-text: #e8eaf0;
+      --bot-msg-border: #2a2e44;
+    }
+
+    /* Subject accent colors */
+    .accent-maths { --subject-color: #6c5ce7; --subject-light: rgba(108, 92, 231, 0.12); }
+    .accent-english { --subject-color: #00b894; --subject-light: rgba(0, 184, 148, 0.12); }
+    .accent-arts { --subject-color: #e17055; --subject-light: rgba(225, 112, 85, 0.12); }
+    .accent-the_world_around_us { --subject-color: #0984e3; --subject-light: rgba(9, 132, 227, 0.12); }
+    .accent-physical_education_and_wellbeing { --subject-color: #e84393; --subject-light: rgba(232, 67, 147, 0.12); }
+
+    /* ══════════════════════════════════════════════════════════
+       RESET & BASE
+       ══════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Smooth scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-secondary); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+    /* ══════════════════════════════════════════════════════════
+       HEADER
+       ══════════════════════════════════════════════════════════ */
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-primary);
+      padding: 0 28px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-primary), #a29bfe);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-text .subtitle {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .header-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      background: var(--accent-primary-medium);
+      color: var(--accent-primary);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.02em;
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .book-context {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-book-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .switch-book-btn {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-sm);
+      background: var(--bg-secondary);
+      color: var(--accent-primary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .switch-book-btn:hover {
+      background: var(--accent-primary-light);
+      border-color: var(--accent-primary);
+    }
+
+    /* Dark mode toggle */
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-primary);
+      background: var(--bg-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all var(--transition-fast);
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-secondary);
+    }
+    .theme-toggle .icon-sun { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+    /* ══════════════════════════════════════════════════════════
+       VIEW 1: BOOK SELECTION
+       ══════════════════════════════════════════════════════════ */
+    #bookSelection {
+      flex: 1;
+      overflow-y: auto;
+      padding: 48px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .welcome-section {
+      text-align: center;
+      margin-bottom: 48px;
+      max-width: 600px;
+    }
+
+    .welcome-section .emoji-banner {
+      font-size: 2.8rem;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: wave 2.5s ease-in-out infinite;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      15% { transform: rotate(14deg); }
+      30% { transform: rotate(-8deg); }
+      40% { transform: rotate(14deg); }
+      50% { transform: rotate(-4deg); }
+      60% { transform: rotate(10deg); }
+      70% { transform: rotate(0deg); }
+    }
+
+    .welcome-section h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .welcome-section h2 .gradient-text {
+      background: linear-gradient(135deg, var(--accent-primary), #a29bfe, #fd79a8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-section p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 1080px;
+    }
+
+    .book-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--transition-smooth);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--subject-color, var(--accent-primary));
+    }
+
+    .book-card-image {
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg-tertiary);
+    }
+
+    .book-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--transition-smooth);
+    }
+
+    .book-card:hover .book-card-image img {
+      transform: scale(1.05);
+    }
+
+    .book-card-image .subject-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: var(--subject-color, var(--accent-primary));
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+
+    .book-card-image .chunk-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+
+    .book-card-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .book-card-body .book-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+    }
+
+    .book-card-body .chapter-preview {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    .book-card-body .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .meta-tag {
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      background: var(--bg-tertiary);
+      color: var(--text-tertiary);
+    }
+
+    .book-card-footer {
+      padding: 0 20px 20px;
+    }
+
+    .start-btn {
+      width: 100%;
+      padding: 11px 0;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: var(--subject-color, var(--accent-primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.01em;
+    }
+
+    .start-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .start-btn .arrow {
+      font-size: 1rem;
+      transition: transform var(--transition-fast);
+    }
+
+    .book-card:hover .start-btn .arrow {
+      transform: translateX(3px);
+    }
+
+    /* Loading state */
+    .loading-text {
+      color: var(--text-tertiary);
+      font-size: 0.92rem;
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .loading-text code {
+      background: var(--bg-tertiary);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       VIEW 2: CHAT
+       ══════════════════════════════════════════════════════════ */
+    #chatView {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── Chapter sidebar ─────────────────────────────────── */
+    .chapter-sidebar {
+      width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-primary);
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chapter-sidebar .sidebar-header {
+      padding: 0 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-primary);
+      margin-bottom: 8px;
+    }
+
+    .chapter-sidebar .sidebar-header h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+      font-weight: 700;
+    }
+
+    .chapter-sidebar .sidebar-header .count-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      background: var(--accent-primary-light);
+      color: var(--accent-primary);
+    }
+
+    .chapter-sidebar .ch-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 10px 20px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: none;
+      background: none;
+      text-align: left;
+      width: 100%;
+      gap: 8px;
+      line-height: 1.4;
+    }
+    .chapter-sidebar .ch-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .chapter-sidebar .ch-num {
+      color: var(--accent-primary);
+      font-weight: 700;
+      font-size: 0.75rem;
+      min-width: 22px;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .chapter-sidebar .unit-header {
+      padding: 14px 20px 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-primary);
+      border-top: 1px solid var(--border-primary);
+      margin-top: 8px;
+    }
+    .chapter-sidebar .unit-header:first-child {
+      border-top: none;
+      margin-top: 0;
+    }
+
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      left: 14px;
+      z-index: 30;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-primary);
+      background: var(--bg-secondary);
+      cursor: pointer;
+      font-size: 1.05rem;
+      box-shadow: var(--shadow-md);
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+    }
+    .sidebar-toggle:hover {
+      background: var(--bg-hover);
+    }
+
+    /* ── Chat area ───────────────────────────────────────── */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-chat);
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 28px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg {
+      max-width: 740px;
+      line-height: 1.7;
+      padding: 14px 20px;
+      border-radius: var(--radius-lg);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.9rem;
+      animation: msgAppear 0.3s ease;
+    }
+
+    @keyframes msgAppear {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--user-msg-bg);
+      color: var(--user-msg-text);
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2);
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: var(--bot-msg-bg);
+      color: var(--bot-msg-text);
+      border: 1px solid var(--bot-msg-border);
+      border-bottom-left-radius: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .msg.bot .sources {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      border-top: 1px solid var(--border-primary);
+      padding-top: 10px;
+      line-height: 1.5;
+    }
+
+    .msg.system {
+      align-self: center;
+      background: var(--accent-primary-light);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 12px 24px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--accent-primary-medium);
+    }
+
+    .msg.system strong {
+      color: var(--accent-primary);
+    }
+
+    /* ── Quick-action chips ──────────────────────────────── */
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0 28px 8px;
+      background: var(--bg-chat);
+    }
+
+    .chip {
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 7px 16px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-primary);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .chip:hover {
+      background: var(--accent-primary-light);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    /* ── Input bar ───────────────────────────────────────── */
+    .input-bar {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-primary);
+      padding: 16px 28px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .mode-select {
+      display: flex;
+      gap: 3px;
+      background: var(--bg-tertiary);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .mode-select button {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all var(--transition-fast);
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+    .mode-select button.active {
+      background: var(--accent-primary);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+    }
+    .mode-select button:hover:not(.active) {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #question {
+      width: 100%;
+      padding: 11px 16px;
+      border: 1.5px solid var(--border-primary);
+      border-radius: var(--radius-md);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all var(--transition-fast);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    #question::placeholder { color: var(--text-tertiary); }
+    #question:focus {
+      border-color: var(--accent-primary);
+      background: var(--bg-secondary);
+      box-shadow: 0 0 0 3px var(--accent-primary-light);
+    }
+    #question:disabled { opacity: 0.5; }
+
+    .send-btn {
+      padding: 11px 24px;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--accent-primary);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .send-btn:hover {
+      background: var(--accent-primary-hover);
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+    }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+    .send-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* ── Spinner ─────────────────────────────────────────── */
+    .spinner::after {
+      content: '';
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--text-tertiary);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Typing indicator ────────────────────────────────── */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 6px 0;
+    }
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-tertiary);
+      animation: typing 1.4s infinite ease-in-out both;
+    }
+    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       RESPONSIVE
+       ══════════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .book-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 0 16px; height: 56px; gap: 10px; }
+      .brand-icon { width: 32px; height: 32px; font-size: 0.95rem; }
+      .brand-text h1 { font-size: 0.95rem; }
+      .brand-text .subtitle { display: none; }
+      .header-book-name { max-width: 140px; font-size: 0.78rem; }
+
+      #bookSelection { padding: 28px 16px; }
+      .welcome-section { margin-bottom: 32px; }
+      .welcome-section h2 { font-size: 1.4rem; }
+      .welcome-section .emoji-banner { font-size: 2.2rem; }
+      .book-grid { grid-template-columns: 1fr; gap: 16px; }
+      .book-card-image { height: 160px; }
+
+      .chapter-sidebar { display: none; }
+      .chapter-sidebar.open {
+        display: flex;
+        position: fixed;
+        left: 0;
+        top: 56px;
+        bottom: 0;
+        z-index: 20;
+        width: 280px;
+        box-shadow: var(--shadow-xl);
+      }
+      .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+
+      #chat { padding: 16px; }
+      .input-bar { padding: 12px 16px; flex-wrap: wrap; }
+      .mode-select { order: 3; width: 100%; justify-content: center; }
+      .input-wrapper { order: 1; }
+      .send-btn { order: 2; }
+    }
+
+    @media (max-width: 480px) {
+      .book-card-image { height: 140px; }
+      .book-card-body { padding: 16px; }
+      .book-card-footer { padding: 0 16px 16px; }
+      .mode-select button { font-size: 0.7rem; padding: 6px 10px; }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       TRANSITIONS FOR THEME SWITCH
+       ══════════════════════════════════════════════════════════ */
+    body,
+    header,
+    .chapter-sidebar,
+    .input-bar,
+    .book-card,
+    .msg,
+    .chip,
+    #question,
+    .theme-toggle,
+    .switch-book-btn,
+    .mode-select,
+    .mode-select button,
+    .send-btn {
+      transition: background-color var(--transition-normal),
+                  border-color var(--transition-normal),
+                  color var(--transition-normal),
+                  box-shadow var(--transition-normal);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ Header ═══════════════════════════════════════════════ -->
+<header>
+  <div class="header-brand">
+    <div class="brand-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>CBSE AI Tutor</h1>
+      <span class="subtitle">Powered by AI</span>
+    </div>
+  </div>
+  <span class="header-badge">Grade 5</span>
+
+  <div class="header-right">
+    <div class="book-context" id="bookContext" style="display:none;">
+      <span class="header-book-name" id="headerBookName"></span>
+      <button class="switch-book-btn" onclick="switchBook()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px;">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        All Books
+      </button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark mode">
+      <span class="icon-moon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </span>
+      <span class="icon-sun">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ VIEW 1: Book Selection ═══════════════════════════════ -->
+<div id="bookSelection">
+  <div class="welcome-section">
+    <div class="emoji-banner">&#x1F4DA;</div>
+    <h2>Welcome to your <span class="gradient-text">AI Tutor</span></h2>
+    <p>Choose a subject to begin your personalized learning session. Ask questions, take quizzes, and explore each chapter with AI assistance.</p>
+  </div>
+  <div class="book-grid" id="bookGrid">
+    <div class="loading-text">Loading books...</div>
+  </div>
+</div>
+
+<!-- ═══ VIEW 2: Chat ═════════════════════════════════════════ -->
+<div id="chatView">
+  <div class="chat-body">
+    <!-- Chapter sidebar -->
+    <div class="chapter-sidebar" id="chapterSidebar">
+      <div class="sidebar-header">
+        <h3 id="sidebarLabel">Chapters</h3>
+        <span class="count-badge" id="chapterCount"></span>
+      </div>
+      <div id="chapterList"></div>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- Main chat area -->
+    <div class="chat-main">
+      <div id="chat">
+        <div class="msg system" id="welcomeMsg"></div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="input-bar">
+        <div class="mode-select">
+          <button class="active" data-mode="ask" title="Ask a question">Ask</button>
+          <button data-mode="quiz" title="Generate quiz">Quiz</button>
+          <button data-mode="practice" title="Practice problems">Practice</button>
+          <button data-mode="explain" title="Explain a concept">Explain</button>
+        </div>
+        <div class="input-wrapper">
+          <input id="question" type="text" placeholder="Ask your question..." autocomplete="off" />
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="send()">
+          Send
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════════════════════ */
+let booksData = [];
+let currentBook = null;
+let currentMode = 'ask';
+const chatHistory = [];
+
+/* Book cover image map */
+const bookImages = {
+  maths: '/static/images/books/maths.jpeg',
+  english: '/static/images/books/english.jpeg',
+  arts: '/static/images/books/arts.jpeg',
+  the_world_around_us: '/static/images/books/the_world_around_us.jpeg',
+  physical_education_and_wellbeing: '/static/images/books/physical_education_and_wellbeing.jpeg',
+};
+
+/* Subject icon map (fallback when no image) */
+const subjectIcons = {
+  maths: '\u{1F4D0}',
+  english: '\u{1F4D6}',
+  arts: '\u{1F3A8}',
+  the_world_around_us: '\u{1F30D}',
+  physical_education_and_wellbeing: '\u{1F3C3}',
+};
+
+/* ══════════════════════════════════════════════════════════════
+   THEME
+   ══════════════════════════════════════════════════════════════ */
+function initTheme() {
+  const saved = localStorage.getItem('cbse-tutor-theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('cbse-tutor-theme', next);
+}
+
+initTheme();
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', loadBooks);
+
+async function loadBooks() {
+  try {
+    const res = await fetch('/api/books');
+    const data = await res.json();
+    booksData = data.books || [];
+    renderBookGrid();
+  } catch (err) {
+    document.getElementById('bookGrid').innerHTML =
+      '<div class="loading-text">Could not load books. Make sure the server is running and books have been ingested.</div>';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOOK GRID
+   ══════════════════════════════════════════════════════════════ */
+function renderBookGrid() {
+  const grid = document.getElementById('bookGrid');
+  if (!booksData.length) {
+    grid.innerHTML = '<div class="loading-text">No books found. Run the ingestion script first:<br><code>python scripts/ingest_books.py</code></div>';
+    return;
+  }
+
+  grid.innerHTML = booksData.map(book => {
+    const accentClass = 'accent-' + book.id;
+    const label = book.chapter_label || 'chapter';
+    const chapterCount = (book.chapters || []).length;
+    const unitCount = (book.units || []).length;
+    const imageUrl = bookImages[book.id] || '';
+
+    let previewHtml = '';
+    if (unitCount) {
+      previewHtml = (book.units || []).slice(0, 3)
+        .map(u => `Unit ${u.number}: ${u.title}`)
+        .join('<br>');
+      if (unitCount > 3) previewHtml += `<br><em>+${unitCount - 3} more units</em>`;
+    } else {
+      previewHtml = (book.chapters || []).slice(0, 3)
+        .map(ch => `${label.charAt(0).toUpperCase() + label.slice(1)} ${ch.number}: ${ch.title}`)
+        .join('<br>');
+      if (chapterCount > 3) previewHtml += `<br><em>+${chapterCount - 3} more</em>`;
+    }
+
+    const metaChapters = unitCount
+      ? `${unitCount} units`
+      : `${chapterCount} ${label}s`;
+    const metaChunks = `${book.chunk_count || 0} chunks`;
+
+    return `
+      <div class="book-card ${accentClass}" onclick="selectBook('${book.id}')">
+        <div class="book-card-image">
+          ${imageUrl
+            ? `<img src="${imageUrl}" alt="${book.title || book.subject}" loading="lazy" />`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;">${subjectIcons[book.id] || '\u{1F4DA}'}</div>`
+          }
+          <span class="subject-badge">${book.subject}</span>
+          <span class="chunk-badge">${metaChunks}</span>
+        </div>
+        <div class="book-card-body">
+          <div class="book-title">${book.title || book.subject}</div>
+          <div class="chapter-preview">${previewHtml}</div>
+          <div class="meta-row">
+            <span class="meta-tag">${metaChapters}</span>
+            <span class="meta-tag">Grade 5</span>
+          </div>
+        </div>
+        <div class="book-card-footer">
+          <button class="start-btn">Start Learning <span class="arrow">&rarr;</span></button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOOK SELECTION
+   ══════════════════════════════════════════════════════════════ */
+function selectBook(bookId) {
+  currentBook = booksData.find(b => b.id === bookId);
+  if (!currentBook) return;
+
+  // Clear previous chat
+  chatHistory.length = 0;
+  const chatEl = document.getElementById('chat');
+  chatEl.innerHTML = '';
+
+  // Update header
+  document.getElementById('headerBookName').textContent =
+    (currentBook.title || currentBook.subject);
+  document.getElementById('bookContext').style.display = 'flex';
+
+  // Welcome message
+  const welcomeDiv = document.createElement('div');
+  welcomeDiv.className = 'msg system';
+  welcomeDiv.innerHTML = `Welcome! I'm your <strong>${currentBook.subject}</strong> tutor for <strong>${currentBook.title || currentBook.subject}</strong>. Ask me anything!`;
+  chatEl.appendChild(welcomeDiv);
+
+  // Populate chapter sidebar
+  const label = (currentBook.chapter_label || 'chapter');
+  const sidebarLabel = document.getElementById('sidebarLabel');
+  sidebarLabel.textContent = label.charAt(0).toUpperCase() + label.slice(1) + 's';
+
+  const chapterCountBadge = document.getElementById('chapterCount');
+  chapterCountBadge.textContent = (currentBook.chapters || []).length;
+
+  const chapterList = document.getElementById('chapterList');
+  const bookUnits = currentBook.units || [];
+  const bookChapters = currentBook.chapters || [];
+
+  if (bookUnits.length) {
+    const unitMap = {};
+    bookChapters.forEach(ch => {
+      const key = ch.unit_number || '__none__';
+      if (!unitMap[key]) unitMap[key] = [];
+      unitMap[key].push(ch);
+    });
+    let sidebarHtml = '';
+    bookUnits.forEach(u => {
+      sidebarHtml += `<div class="unit-header">Unit ${u.number}: ${u.title}</div>`;
+      (unitMap[u.number] || []).forEach(ch => {
+        sidebarHtml += `<button class="ch-item" onclick="askAboutChapter(${ch.number}, '${ch.title.replace(/'/g, "\\'")}')">` +
+          `<span class="ch-num">${ch.number}.</span><span>${ch.title}</span></button>`;
+      });
+    });
+    (unitMap['__none__'] || []).forEach(ch => {
+      sidebarHtml += `<button class="ch-item" onclick="askAboutChapter(${ch.number}, '${ch.title.replace(/'/g, "\\'")}')">` +
+        `<span class="ch-num">${ch.number}.</span><span>${ch.title}</span></button>`;
+    });
+    chapterList.innerHTML = sidebarHtml;
+  } else {
+    chapterList.innerHTML = bookChapters.map(ch =>
+      `<button class="ch-item" onclick="askAboutChapter(${ch.number}, '${ch.title.replace(/'/g, "\\'")}')">` +
+      `<span class="ch-num">${ch.number}.</span><span>${ch.title}</span></button>`
+    ).join('');
+  }
+
+  // Quick-action chips (mode-aware)
+  updateChips();
+
+  // Switch views
+  document.getElementById('bookSelection').style.display = 'none';
+  document.getElementById('chatView').style.display = 'flex';
+  document.getElementById('question').focus();
+}
+
+function switchBook() {
+  currentBook = null;
+  document.getElementById('bookContext').style.display = 'none';
+  document.getElementById('chatView').style.display = 'none';
+  document.getElementById('bookSelection').style.display = 'flex';
+}
+
+function askAboutChapter(num, title) {
+  const label = currentBook.chapter_label || 'chapter';
+  const chapterRef = `${label} ${num}: ${title}`;
+  let q;
+  switch (currentMode) {
+    case 'quiz':
+      q = chapterRef;
+      break;
+    case 'practice':
+      q = chapterRef;
+      break;
+    case 'explain':
+      q = chapterRef;
+      break;
+    default: // ask
+      q = `Tell me about ${chapterRef}`;
+  }
+  document.getElementById('question').value = q;
+  send();
+}
+
+function toggleSidebar() {
+  document.getElementById('chapterSidebar').classList.toggle('open');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MODE SELECTOR
+   ══════════════════════════════════════════════════════════════ */
+const modePlaceholders = {
+  ask: 'Ask your question...',
+  quiz: 'Enter a chapter or topic for quiz...',
+  practice: 'Enter a chapter or topic for practice...',
+  explain: 'Enter a chapter or concept to explain...',
+};
+
+const modeChipLabels = {
+  ask: 'Tell me about',
+  quiz: 'Quiz me on',
+  practice: 'Practice',
+  explain: 'Explain',
+};
+
+document.querySelectorAll('.mode-select button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelector('.mode-select .active').classList.remove('active');
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+    document.getElementById('question').placeholder = modePlaceholders[currentMode] || '';
+    document.getElementById('question').focus();
+    updateChips();
+  });
+});
+
+function updateChips() {
+  if (!currentBook) return;
+  const label = currentBook.chapter_label || 'chapter';
+  const chips = document.getElementById('chips');
+  const chipData = (currentBook.chapters || []).slice(0, 5);
+  const chipLabel = modeChipLabels[currentMode] || 'Tell me about';
+
+  chips.innerHTML = chipData.map(ch => {
+    const chapterRef = `${label} ${ch.number}: ${ch.title}`;
+    const q = currentMode === 'ask' ? `Tell me about ${chapterRef}` : chapterRef;
+    return `<span class="chip" data-q="${q.replace(/"/g, '&quot;')}">${chipLabel} ${ch.title}</span>`;
+  }).join('');
+  chips.style.display = chipData.length ? 'flex' : 'none';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CHIPS
+   ══════════════════════════════════════════════════════════════ */
+document.getElementById('chips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  document.getElementById('question').value = chip.dataset.q;
+  send();
+});
+
+/* ══════════════════════════════════════════════════════════════
+   ENTER KEY
+   ══════════════════════════════════════════════════════════════ */
+document.getElementById('question').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   HELPERS
+   ══════════════════════════════════════════════════════════════ */
+const chatEl = document.getElementById('chat');
+const inputEl = document.getElementById('question');
+const sendBtn = document.getElementById('sendBtn');
+
+function addMsg(text, cls) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  if (cls === 'bot') {
+    // Add typing indicator initially
+    div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  } else {
+    div.textContent = text;
+  }
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return div;
+}
+
+function setLoading(on) {
+  inputEl.disabled = on;
+  sendBtn.disabled = on;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SEND
+   ══════════════════════════════════════════════════════════════ */
+async function send() {
+  if (!currentBook) return;
+  const text = inputEl.value.trim();
+  if (!text) return;
+  inputEl.value = '';
+
+  document.getElementById('chips').style.display = 'none';
+
+  // Show a mode-aware user message
+  const modeLabels = { quiz: 'Quiz', practice: 'Practice', explain: 'Explain' };
+  const displayText = modeLabels[currentMode]
+    ? `[${modeLabels[currentMode]}] ${text}`
+    : text;
+  addMsg(displayText, 'user');
+  setLoading(true);
+
+  if (currentMode === 'ask') {
+    await streamAnswer(text);
+  } else {
+    await fetchAction(currentMode, text);
+  }
+  setLoading(false);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STREAMING ANSWER (SSE)
+   ══════════════════════════════════════════════════════════════ */
+async function streamAnswer(question) {
+  chatHistory.push({ role: 'user', content: question });
+  const botDiv = addMsg('', 'bot');
+  let fullText = '';
+
+  try {
+    const res = await fetch('/api/ask/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question,
+        book_id: currentBook.id,
+        history: chatHistory.slice(-6),
+      }),
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = JSON.parse(line.slice(6));
+        if (payload.token) {
+          if (botDiv.querySelector('.typing-indicator')) {
+            botDiv.innerHTML = '';
+          }
+          fullText += payload.token;
+          botDiv.textContent = fullText;
+          chatEl.scrollTop = chatEl.scrollHeight;
+        }
+        if (payload.done && payload.sources && payload.sources.length) {
+          const srcDiv = document.createElement('div');
+          srcDiv.className = 'sources';
+          const srcLines = payload.sources
+            .map(s => {
+              const subj = (s.subject || 'unknown').replace(/\b\w/g, c => c.toUpperCase());
+              const title = s.book_title ? ` (${s.book_title})` : '';
+              return `${subj}${title}, p.${s.page_number || '?'}`;
+            })
+            .filter((v, i, a) => a.indexOf(v) === i);
+          srcDiv.textContent = 'Sources: ' + srcLines.join(', ');
+          botDiv.appendChild(srcDiv);
+        }
+      }
+    }
+    if (fullText) chatHistory.push({ role: 'assistant', content: fullText });
+  } catch (err) {
+    botDiv.innerHTML = '';
+    botDiv.textContent = 'Error: ' + err.message;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NON-STREAMING ACTIONS
+   ══════════════════════════════════════════════════════════════ */
+async function fetchAction(mode, text) {
+  const botDiv = addMsg('', 'bot');
+
+  const endpoints = {
+    quiz:     { url: '/api/quiz',     body: { topic: text, book_id: currentBook.id } },
+    practice: { url: '/api/practice', body: { topic: text, book_id: currentBook.id } },
+    explain:  { url: '/api/explain',  body: { concept: text, book_id: currentBook.id } },
+  };
+  const ep = endpoints[mode];
+  if (!ep) return;
+
+  try {
+    const res = await fetch(ep.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ep.body),
+    });
+    const data = await res.json();
+    botDiv.innerHTML = '';
+    botDiv.textContent = data.quiz || data.practice || data.explanation || JSON.stringify(data);
+  } catch (err) {
+    botDiv.innerHTML = '';
+    botDiv.textContent = 'Error: ' + err.message;
+  }
+}
+</script>
+</body>
+</html>
